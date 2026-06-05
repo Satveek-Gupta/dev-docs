@@ -137,6 +137,85 @@
     "slugAsParams": "cicd/github-actions-pipeline"
   },
   {
+    "title": "Docker Compose Production Guide",
+    "description": "Master Docker Compose for multi-container applications — from local dev to production-grade deployments with health checks, networking, and secrets.",
+    "slug": "docker/docker-compose-guide",
+    "category": "docker",
+    "tags": [
+      "docker",
+      "compose",
+      "containers",
+      "production",
+      "networking"
+    ],
+    "publishedAt": "2026-02-01T00:00:00.000Z",
+    "updatedAt": "2026-05-15T00:00:00.000Z",
+    "featured": true,
+    "author": "Satveek Gupta",
+    "readingTime": 15,
+    "template": false,
+    "draft": false,
+    "toc": [
+      {
+        "title": "Overview",
+        "url": "#overview",
+        "items": []
+      },
+      {
+        "title": "Architecture",
+        "url": "#architecture",
+        "items": []
+      },
+      {
+        "title": "Basic Compose File",
+        "url": "#basic-compose-file",
+        "items": []
+      },
+      {
+        "title": "Multi-Stage Dockerfile",
+        "url": "#multi-stage-dockerfile",
+        "items": []
+      },
+      {
+        "title": "Environment Management",
+        "url": "#environment-management",
+        "items": []
+      },
+      {
+        "title": "Common Commands",
+        "url": "#common-commands",
+        "items": []
+      },
+      {
+        "title": "Health Checks",
+        "url": "#health-checks",
+        "items": []
+      },
+      {
+        "title": "Secrets Management",
+        "url": "#secrets-management",
+        "items": []
+      },
+      {
+        "title": "Troubleshooting",
+        "url": "#troubleshooting",
+        "items": []
+      },
+      {
+        "title": "References",
+        "url": "#references",
+        "items": []
+      }
+    ],
+    "metadata": {
+      "readingTime": 2,
+      "wordCount": 552
+    },
+    "excerpt": "Overview\nDocker Compose transforms complex multi-container setups into a single declarative YAML file. This guide covers everything from basic local development to production-hardened deployments.\nArchitecture\ngraph LR\n  A[Nginx Proxy] --> B[App Container]\n  B",
+    "content": "const{Fragment:e,jsx:n,jsxs:r}=arguments[0];function _createMdxContent(o){const t={a:\"a\",code:\"code\",em:\"em\",h2:\"h2\",li:\"li\",p:\"p\",pre:\"pre\",table:\"table\",tbody:\"tbody\",td:\"td\",th:\"th\",thead:\"thead\",tr:\"tr\",ul:\"ul\",...o.components},{Callout:c,Tab:i,Tabs:d}=t;return c||_missingMdxReference(\"Callout\",!0),i||_missingMdxReference(\"Tab\",!0),d||_missingMdxReference(\"Tabs\",!0),r(e,{children:[n(t.h2,{id:\"overview\",children:n(t.a,{className:\"anchor\",href:\"#overview\",children:\"Overview\"})}),\"\\n\",n(t.p,{children:\"Docker Compose transforms complex multi-container setups into a single declarative YAML file. This guide covers everything from basic local development to production-hardened deployments.\"}),\"\\n\",n(t.h2,{id:\"architecture\",children:n(t.a,{className:\"anchor\",href:\"#architecture\",children:\"Architecture\"})}),\"\\n\",n(t.pre,{children:n(t.code,{className:\"language-mermaid\",children:\"graph LR\\n  A[Nginx Proxy] --\\x3e B[App Container]\\n  B --\\x3e C[PostgreSQL]\\n  B --\\x3e D[Redis Cache]\\n  B --\\x3e E[S3 / Volume]\\n  F[Docker Network] -.->|bridge| A\\n  F -.->|bridge| B\\n  F -.->|bridge| C\\n  F -.->|bridge| D\\n\"})}),\"\\n\",n(t.h2,{id:\"basic-compose-file\",children:n(t.a,{className:\"anchor\",href:\"#basic-compose-file\",children:\"Basic Compose File\"})}),\"\\n\",n(t.pre,{children:n(t.code,{className:\"language-yaml\",metastring:'title=\"docker-compose.yml\"',title:\"docker-compose.yml\",children:'version: \\'3.9\\'\\n\\nservices:\\n  app:\\n    build:\\n      context: .\\n      dockerfile: Dockerfile\\n      target: production\\n    ports:\\n      - \"3000:3000\"\\n    environment:\\n      - NODE_ENV=production\\n      - DATABASE_URL=${DATABASE_URL}\\n    depends_on:\\n      db:\\n        condition: service_healthy\\n      redis:\\n        condition: service_started\\n    restart: unless-stopped\\n    networks:\\n      - app-network\\n\\n  db:\\n    image: postgres:16-alpine\\n    environment:\\n      POSTGRES_DB: ${POSTGRES_DB}\\n      POSTGRES_USER: ${POSTGRES_USER}\\n      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}\\n    volumes:\\n      - postgres_data:/var/lib/postgresql/data\\n      - ./init.sql:/docker-entrypoint-initdb.d/init.sql\\n    healthcheck:\\n      test: [\"CMD-SHELL\", \"pg_isready -U ${POSTGRES_USER}\"]\\n      interval: 10s\\n      timeout: 5s\\n      retries: 5\\n    networks:\\n      - app-network\\n\\n  redis:\\n    image: redis:7-alpine\\n    command: redis-server --requirepass ${REDIS_PASSWORD}\\n    volumes:\\n      - redis_data:/data\\n    networks:\\n      - app-network\\n\\n  nginx:\\n    image: nginx:alpine\\n    ports:\\n      - \"80:80\"\\n      - \"443:443\"\\n    volumes:\\n      - ./nginx.conf:/etc/nginx/nginx.conf:ro\\n      - ./certs:/etc/ssl/certs:ro\\n    depends_on:\\n      - app\\n    networks:\\n      - app-network\\n\\nvolumes:\\n  postgres_data:\\n  redis_data:\\n\\nnetworks:\\n  app-network:\\n    driver: bridge\\n'})}),\"\\n\",n(t.h2,{id:\"multi-stage-dockerfile\",children:n(t.a,{className:\"anchor\",href:\"#multi-stage-dockerfile\",children:\"Multi-Stage Dockerfile\"})}),\"\\n\",n(t.pre,{children:n(t.code,{className:\"language-dockerfile\",metastring:'title=\"Dockerfile\"',title:\"Dockerfile\",children:'# ---- Base ----\\nFROM node:22-alpine AS base\\nWORKDIR /app\\nCOPY package*.json ./\\n\\n# ---- Dependencies ----\\nFROM base AS deps\\nRUN npm ci --only=production\\n\\n# ---- Build ----\\nFROM base AS builder\\nRUN npm ci\\nCOPY . .\\nRUN npm run build\\n\\n# ---- Production ----\\nFROM node:22-alpine AS production\\nWORKDIR /app\\nENV NODE_ENV=production\\n\\nCOPY --from=deps /app/node_modules ./node_modules\\nCOPY --from=builder /app/dist ./dist\\nCOPY --from=builder /app/package.json .\\n\\nRUN addgroup -g 1001 nodejs && \\\\\\n    adduser -S nextjs -u 1001 && \\\\\\n    chown -R nextjs:nodejs /app\\n\\nUSER nextjs\\n\\nEXPOSE 3000\\nCMD [\"node\", \"dist/index.js\"]\\n'})}),\"\\n\",n(c,{type:\"note\",children:n(t.p,{children:\"Multi-stage builds drastically reduce image size. A typical Node.js app goes from ~1.2GB to ~150MB.\"})}),\"\\n\",n(t.h2,{id:\"environment-management\",children:n(t.a,{className:\"anchor\",href:\"#environment-management\",children:\"Environment Management\"})}),\"\\n\",r(d,{children:[n(i,{title:\"Development\",children:n(t.pre,{children:n(t.code,{className:\"language-env\",metastring:'title=\".env.dev\"',title:\".env.dev\",children:\"NODE_ENV=development\\nDATABASE_URL=postgresql://postgres:dev@localhost:5432/mydb\\nREDIS_PASSWORD=devpass\\nPOSTGRES_DB=mydb\\nPOSTGRES_USER=postgres\\nPOSTGRES_PASSWORD=dev\\n\"})})}),n(i,{title:\"Production\",children:n(t.pre,{children:n(t.code,{className:\"language-env\",metastring:'title=\".env.prod\"',title:\".env.prod\",children:\"NODE_ENV=production\\nDATABASE_URL=postgresql://prod_user:${SECRET}@db:5432/proddb\\nREDIS_PASSWORD=${REDIS_SECRET}\\nPOSTGRES_DB=proddb\\nPOSTGRES_USER=prod_user\\nPOSTGRES_PASSWORD=${DB_SECRET}\\n\"})})})]}),\"\\n\",n(t.h2,{id:\"common-commands\",children:n(t.a,{className:\"anchor\",href:\"#common-commands\",children:\"Common Commands\"})}),\"\\n\",n(t.pre,{children:n(t.code,{className:\"language-bash\",metastring:'title=\"compose-commands.sh\"',title:\"compose-commands.sh\",children:\"# Start all services in background\\ndocker compose up -d\\n\\n# Start specific service\\ndocker compose up -d app\\n\\n# View logs\\ndocker compose logs -f app\\n\\n# Scale a service\\ndocker compose up -d --scale app=3\\n\\n# Execute command in container\\ndocker compose exec app sh\\n\\n# Rebuild without cache\\ndocker compose build --no-cache\\n\\n# Stop and remove volumes\\ndocker compose down -v\\n\\n# Pull latest images\\ndocker compose pull\\n\"})}),\"\\n\",n(t.h2,{id:\"health-checks\",children:n(t.a,{className:\"anchor\",href:\"#health-checks\",children:\"Health Checks\"})}),\"\\n\",n(t.pre,{children:n(t.code,{className:\"language-yaml\",metastring:'title=\"healthcheck.yml\"',title:\"healthcheck.yml\",children:'services:\\n  app:\\n    healthcheck:\\n      test: [\"CMD\", \"wget\", \"--no-verbose\", \"--tries=1\", \"--spider\", \"http://localhost:3000/health\"]\\n      interval: 30s\\n      timeout: 10s\\n      retries: 3\\n      start_period: 40s\\n'})}),\"\\n\",n(c,{type:\"tip\",children:r(t.p,{children:[\"Always add health checks before \",n(t.code,{children:\"depends_on\"}),\". Without them, Compose only waits for the container to \",n(t.em,{children:\"start\"}),\", not for the service to be \",n(t.em,{children:\"ready\"}),\".\"]})}),\"\\n\",n(t.h2,{id:\"secrets-management\",children:n(t.a,{className:\"anchor\",href:\"#secrets-management\",children:\"Secrets Management\"})}),\"\\n\",n(t.pre,{children:n(t.code,{className:\"language-yaml\",metastring:'title=\"docker-compose.secrets.yml\"',title:\"docker-compose.secrets.yml\",children:\"services:\\n  app:\\n    secrets:\\n      - db_password\\n      - api_key\\n\\nsecrets:\\n  db_password:\\n    file: ./secrets/db_password.txt\\n  api_key:\\n    external: true  # Managed by Docker Swarm / external secret store\\n\"})}),\"\\n\",n(t.h2,{id:\"troubleshooting\",children:n(t.a,{className:\"anchor\",href:\"#troubleshooting\",children:\"Troubleshooting\"})}),\"\\n\",r(t.table,{children:[n(t.thead,{children:r(t.tr,{children:[n(t.th,{children:\"Problem\"}),n(t.th,{children:\"Command\"})]})}),r(t.tbody,{children:[r(t.tr,{children:[n(t.td,{children:\"Container keeps restarting\"}),n(t.td,{children:n(t.code,{children:\"docker compose logs <service>\"})})]}),r(t.tr,{children:[n(t.td,{children:\"Port already in use\"}),n(t.td,{children:n(t.code,{children:\"lsof -ti:3000 | xargs kill\"})})]}),r(t.tr,{children:[n(t.td,{children:\"Volume permissions\"}),n(t.td,{children:n(t.code,{children:\"docker compose exec app chown -R app:app /data\"})})]}),r(t.tr,{children:[n(t.td,{children:\"Network conflicts\"}),n(t.td,{children:n(t.code,{children:\"docker network prune\"})})]}),r(t.tr,{children:[n(t.td,{children:\"Out of disk space\"}),n(t.td,{children:n(t.code,{children:\"docker system prune -a\"})})]})]})]}),\"\\n\",n(t.h2,{id:\"references\",children:n(t.a,{className:\"anchor\",href:\"#references\",children:\"References\"})}),\"\\n\",r(t.ul,{children:[\"\\n\",n(t.li,{children:n(t.a,{href:\"https://docs.docker.com/compose/compose-file/\",children:\"Docker Compose Reference\"})}),\"\\n\",n(t.li,{children:n(t.a,{href:\"https://docs.docker.com/develop/develop-images/dockerfile_best-practices/\",children:\"Dockerfile Best Practices\"})}),\"\\n\"]})]})}return{default:function(e={}){const{wrapper:r}=e.components||{};return r?n(r,{...e,children:n(_createMdxContent,{...e})}):_createMdxContent(e)}};function _missingMdxReference(e,n){throw new Error(\"Expected \"+(n?\"component\":\"object\")+\" `\"+e+\"` to be defined: you likely forgot to import, pass, or provide it.\")}",
+    "slugAsParams": "docker/docker-compose-guide"
+  },
+  {
     "title": "Kubernetes Deployment Strategies",
     "description": "Deep dive into Kubernetes deployment strategies — Rolling Updates, Blue/Green, Canary, and A/B deployments with real-world manifests and rollback procedures.",
     "slug": "kubernetes/deployment-strategies",
@@ -285,85 +364,6 @@
     "excerpt": "Overview\nThis checklist covers the essential hardening steps for Ubuntu/Debian and RHEL/CentOS servers. Run through each section after initial server provisioning.\n\nTest all hardening steps in a **staging environment** before applying to production. Locking yo",
     "content": "const{Fragment:e,jsx:n,jsxs:s}=arguments[0];function _createMdxContent(t){const a={a:\"a\",code:\"code\",h2:\"h2\",p:\"p\",pre:\"pre\",strong:\"strong\",table:\"table\",tbody:\"tbody\",td:\"td\",th:\"th\",thead:\"thead\",tr:\"tr\",...t.components},{Callout:i,Tab:r,Tabs:d}=a;return i||_missingMdxReference(\"Callout\",!0),r||_missingMdxReference(\"Tab\",!0),d||_missingMdxReference(\"Tabs\",!0),s(e,{children:[n(a.h2,{id:\"overview\",children:n(a.a,{className:\"anchor\",href:\"#overview\",children:\"Overview\"})}),\"\\n\",n(a.p,{children:\"This checklist covers the essential hardening steps for Ubuntu/Debian and RHEL/CentOS servers. Run through each section after initial server provisioning.\"}),\"\\n\",n(i,{type:\"warning\",children:s(a.p,{children:[\"Test all hardening steps in a \",n(a.strong,{children:\"staging environment\"}),\" before applying to production. Locking yourself out of SSH has no easy fix on a remote server.\"]})}),\"\\n\",n(a.h2,{id:\"1-system-updates\",children:n(a.a,{className:\"anchor\",href:\"#1-system-updates\",children:\"1. System Updates\"})}),\"\\n\",n(a.pre,{children:n(a.code,{className:\"language-bash\",metastring:'title=\"01-updates.sh\"',title:\"01-updates.sh\",children:\"# Ubuntu/Debian\\nsudo apt update && sudo apt upgrade -y\\nsudo apt install -y unattended-upgrades\\nsudo dpkg-reconfigure --priority=low unattended-upgrades\\n\\n# RHEL/CentOS\\nsudo dnf update -y\\nsudo dnf install -y dnf-automatic\\nsudo systemctl enable --now dnf-automatic.timer\\n\"})}),\"\\n\",n(a.h2,{id:\"2-user--access-management\",children:n(a.a,{className:\"anchor\",href:\"#2-user--access-management\",children:\"2. User & Access Management\"})}),\"\\n\",n(a.pre,{children:n(a.code,{className:\"language-bash\",metastring:'title=\"02-users.sh\"',title:\"02-users.sh\",children:\"# Create a non-root admin user\\nsudo useradd -m -s /bin/bash -G sudo adminuser\\nsudo passwd adminuser\\n\\n# Copy SSH keys\\nsudo mkdir -p /home/adminuser/.ssh\\nsudo cp ~/.ssh/authorized_keys /home/adminuser/.ssh/\\nsudo chown -R adminuser:adminuser /home/adminuser/.ssh\\nsudo chmod 700 /home/adminuser/.ssh\\nsudo chmod 600 /home/adminuser/.ssh/authorized_keys\\n\"})}),\"\\n\",n(a.h2,{id:\"3-ssh-hardening\",children:n(a.a,{className:\"anchor\",href:\"#3-ssh-hardening\",children:\"3. SSH Hardening\"})}),\"\\n\",n(a.pre,{children:n(a.code,{className:\"language-bash\",metastring:'title=\"03-sshd-config\" {5,8,11,14}',title:\"03-sshd-config\",children:\"# /etc/ssh/sshd_config\\nPort 2222                     # Change default port\\nPermitRootLogin no            # Disable root login\\nPasswordAuthentication no     # Key-only auth\\nPubkeyAuthentication yes\\nAuthorizedKeysFile .ssh/authorized_keys\\nMaxAuthTries 3\\nLoginGraceTime 30\\nAllowUsers adminuser          # Whitelist users\\nClientAliveInterval 300\\nClientAliveCountMax 2\\nX11Forwarding no\\nAllowTcpForwarding no\\nBanner /etc/ssh/banner.txt\\n\"})}),\"\\n\",n(a.pre,{children:n(a.code,{className:\"language-bash\",children:\"sudo systemctl restart sshd\\n\"})}),\"\\n\",n(a.h2,{id:\"4-firewall-configuration\",children:n(a.a,{className:\"anchor\",href:\"#4-firewall-configuration\",children:\"4. Firewall Configuration\"})}),\"\\n\",s(d,{children:[n(r,{title:\"UFW (Ubuntu)\",children:n(a.pre,{children:n(a.code,{className:\"language-bash\",metastring:'title=\"ufw-setup.sh\"',title:\"ufw-setup.sh\",children:\"sudo ufw default deny incoming\\nsudo ufw default allow outgoing\\nsudo ufw allow 2222/tcp    # SSH on custom port\\nsudo ufw allow 80/tcp      # HTTP\\nsudo ufw allow 443/tcp     # HTTPS\\nsudo ufw enable\\nsudo ufw status verbose\\n\"})})}),n(r,{title:\"firewalld (RHEL)\",children:n(a.pre,{children:n(a.code,{className:\"language-bash\",metastring:'title=\"firewalld-setup.sh\"',title:\"firewalld-setup.sh\",children:\"sudo systemctl enable --now firewalld\\nsudo firewall-cmd --permanent --remove-service=ssh\\nsudo firewall-cmd --permanent --add-port=2222/tcp\\nsudo firewall-cmd --permanent --add-service=http\\nsudo firewall-cmd --permanent --add-service=https\\nsudo firewall-cmd --reload\\nsudo firewall-cmd --list-all\\n\"})})})]}),\"\\n\",n(a.h2,{id:\"5-fail2ban\",children:n(a.a,{className:\"anchor\",href:\"#5-fail2ban\",children:\"5. Fail2Ban\"})}),\"\\n\",n(a.pre,{children:n(a.code,{className:\"language-bash\",metastring:'title=\"fail2ban-setup.sh\"',title:\"fail2ban-setup.sh\",children:\"sudo apt install -y fail2ban\\n\\ncat > /etc/fail2ban/jail.local << 'EOF'\\n[DEFAULT]\\nbantime  = 3600\\nfindtime = 600\\nmaxretry = 3\\nbackend  = systemd\\n\\n[sshd]\\nenabled = true\\nport    = 2222\\nlogpath = %(sshd_log)s\\nEOF\\n\\nsudo systemctl enable --now fail2ban\\nsudo fail2ban-client status sshd\\n\"})}),\"\\n\",n(a.h2,{id:\"6-kernel-hardening\",children:n(a.a,{className:\"anchor\",href:\"#6-kernel-hardening\",children:\"6. Kernel Hardening\"})}),\"\\n\",n(a.pre,{children:n(a.code,{className:\"language-bash\",metastring:'title=\"06-sysctl.sh\"',title:\"06-sysctl.sh\",children:\"cat >> /etc/sysctl.d/99-hardening.conf << 'EOF'\\n# Disable IP forwarding (unless this is a router)\\nnet.ipv4.ip_forward = 0\\n\\n# Disable ICMP redirects\\nnet.ipv4.conf.all.accept_redirects = 0\\nnet.ipv4.conf.default.accept_redirects = 0\\n\\n# Enable SYN flood protection\\nnet.ipv4.tcp_syncookies = 1\\n\\n# Disable source routing\\nnet.ipv4.conf.all.accept_source_route = 0\\n\\n# Log suspicious packets\\nnet.ipv4.conf.all.log_martians = 1\\n\\n# Randomize memory layout\\nkernel.randomize_va_space = 2\\n\\n# Restrict core dumps\\nfs.suid_dumpable = 0\\nEOF\\n\\nsudo sysctl -p /etc/sysctl.d/99-hardening.conf\\n\"})}),\"\\n\",n(a.h2,{id:\"7-audit-logging\",children:n(a.a,{className:\"anchor\",href:\"#7-audit-logging\",children:\"7. Audit Logging\"})}),\"\\n\",n(a.pre,{children:n(a.code,{className:\"language-bash\",metastring:'title=\"07-auditd.sh\"',title:\"07-auditd.sh\",children:\"sudo apt install -y auditd audispd-plugins\\n\\n# Monitor sensitive files\\nsudo auditctl -w /etc/passwd -p wa -k passwd_changes\\nsudo auditctl -w /etc/sudoers -p wa -k sudoers_changes\\nsudo auditctl -w /var/log/auth.log -p wa -k auth_log\\n\\n# Enable and start\\nsudo systemctl enable --now auditd\\n\"})}),\"\\n\",n(a.h2,{id:\"verification-checklist\",children:n(a.a,{className:\"anchor\",href:\"#verification-checklist\",children:\"Verification Checklist\"})}),\"\\n\",n(a.pre,{children:n(a.code,{className:\"language-bash\",metastring:'title=\"verify.sh\"',title:\"verify.sh\",children:'# Check SSH config\\nsudo sshd -T | grep -E \"permitrootlogin|passwordauth|port\"\\n\\n# Check open ports\\nsudo ss -tulpn\\n\\n# Check firewall status\\nsudo ufw status verbose\\n\\n# Check fail2ban\\nsudo fail2ban-client status\\n\\n# Check for SUID/SGID files\\nfind / -perm /4000 -type f 2>/dev/null\\n\\n# Check listening services\\nsudo netstat -tulpn | grep LISTEN\\n\\n# Run Lynis security audit\\nsudo apt install -y lynis\\nsudo lynis audit system\\n'})}),\"\\n\",n(a.h2,{id:\"security-score-targets\",children:n(a.a,{className:\"anchor\",href:\"#security-score-targets\",children:\"Security Score Targets\"})}),\"\\n\",s(a.table,{children:[n(a.thead,{children:s(a.tr,{children:[n(a.th,{children:\"Check\"}),n(a.th,{children:\"Tool\"}),n(a.th,{children:\"Target\"})]})}),s(a.tbody,{children:[s(a.tr,{children:[n(a.td,{children:\"CIS Benchmark\"}),n(a.td,{children:n(a.code,{children:\"lynis\"})}),n(a.td,{children:\"> 80%\"})]}),s(a.tr,{children:[n(a.td,{children:\"Open ports\"}),n(a.td,{children:n(a.code,{children:\"nmap\"})}),n(a.td,{children:\"Minimum required\"})]}),s(a.tr,{children:[n(a.td,{children:\"Failed logins\"}),n(a.td,{children:n(a.code,{children:\"fail2ban\"})}),n(a.td,{children:\"Banning >3 retries\"})]}),s(a.tr,{children:[n(a.td,{children:\"Kernel CVEs\"}),n(a.td,{children:n(a.code,{children:\"apt list --upgradable\"})}),n(a.td,{children:\"0 critical\"})]})]})]})]})}return{default:function(e={}){const{wrapper:s}=e.components||{};return s?n(s,{...e,children:n(_createMdxContent,{...e})}):_createMdxContent(e)}};function _missingMdxReference(e,n){throw new Error(\"Expected \"+(n?\"component\":\"object\")+\" `\"+e+\"` to be defined: you likely forgot to import, pass, or provide it.\")}",
     "slugAsParams": "linux/server-hardening"
-  },
-  {
-    "title": "Docker Compose Production Guide",
-    "description": "Master Docker Compose for multi-container applications — from local dev to production-grade deployments with health checks, networking, and secrets.",
-    "slug": "docker/docker-compose-guide",
-    "category": "docker",
-    "tags": [
-      "docker",
-      "compose",
-      "containers",
-      "production",
-      "networking"
-    ],
-    "publishedAt": "2026-02-01T00:00:00.000Z",
-    "updatedAt": "2026-05-15T00:00:00.000Z",
-    "featured": true,
-    "author": "Satveek Gupta",
-    "readingTime": 15,
-    "template": false,
-    "draft": false,
-    "toc": [
-      {
-        "title": "Overview",
-        "url": "#overview",
-        "items": []
-      },
-      {
-        "title": "Architecture",
-        "url": "#architecture",
-        "items": []
-      },
-      {
-        "title": "Basic Compose File",
-        "url": "#basic-compose-file",
-        "items": []
-      },
-      {
-        "title": "Multi-Stage Dockerfile",
-        "url": "#multi-stage-dockerfile",
-        "items": []
-      },
-      {
-        "title": "Environment Management",
-        "url": "#environment-management",
-        "items": []
-      },
-      {
-        "title": "Common Commands",
-        "url": "#common-commands",
-        "items": []
-      },
-      {
-        "title": "Health Checks",
-        "url": "#health-checks",
-        "items": []
-      },
-      {
-        "title": "Secrets Management",
-        "url": "#secrets-management",
-        "items": []
-      },
-      {
-        "title": "Troubleshooting",
-        "url": "#troubleshooting",
-        "items": []
-      },
-      {
-        "title": "References",
-        "url": "#references",
-        "items": []
-      }
-    ],
-    "metadata": {
-      "readingTime": 2,
-      "wordCount": 552
-    },
-    "excerpt": "Overview\nDocker Compose transforms complex multi-container setups into a single declarative YAML file. This guide covers everything from basic local development to production-hardened deployments.\nArchitecture\ngraph LR\n  A[Nginx Proxy] --> B[App Container]\n  B",
-    "content": "const{Fragment:e,jsx:n,jsxs:r}=arguments[0];function _createMdxContent(o){const t={a:\"a\",code:\"code\",em:\"em\",h2:\"h2\",li:\"li\",p:\"p\",pre:\"pre\",table:\"table\",tbody:\"tbody\",td:\"td\",th:\"th\",thead:\"thead\",tr:\"tr\",ul:\"ul\",...o.components},{Callout:c,Tab:i,Tabs:d}=t;return c||_missingMdxReference(\"Callout\",!0),i||_missingMdxReference(\"Tab\",!0),d||_missingMdxReference(\"Tabs\",!0),r(e,{children:[n(t.h2,{id:\"overview\",children:n(t.a,{className:\"anchor\",href:\"#overview\",children:\"Overview\"})}),\"\\n\",n(t.p,{children:\"Docker Compose transforms complex multi-container setups into a single declarative YAML file. This guide covers everything from basic local development to production-hardened deployments.\"}),\"\\n\",n(t.h2,{id:\"architecture\",children:n(t.a,{className:\"anchor\",href:\"#architecture\",children:\"Architecture\"})}),\"\\n\",n(t.pre,{children:n(t.code,{className:\"language-mermaid\",children:\"graph LR\\n  A[Nginx Proxy] --\\x3e B[App Container]\\n  B --\\x3e C[PostgreSQL]\\n  B --\\x3e D[Redis Cache]\\n  B --\\x3e E[S3 / Volume]\\n  F[Docker Network] -.->|bridge| A\\n  F -.->|bridge| B\\n  F -.->|bridge| C\\n  F -.->|bridge| D\\n\"})}),\"\\n\",n(t.h2,{id:\"basic-compose-file\",children:n(t.a,{className:\"anchor\",href:\"#basic-compose-file\",children:\"Basic Compose File\"})}),\"\\n\",n(t.pre,{children:n(t.code,{className:\"language-yaml\",metastring:'title=\"docker-compose.yml\"',title:\"docker-compose.yml\",children:'version: \\'3.9\\'\\n\\nservices:\\n  app:\\n    build:\\n      context: .\\n      dockerfile: Dockerfile\\n      target: production\\n    ports:\\n      - \"3000:3000\"\\n    environment:\\n      - NODE_ENV=production\\n      - DATABASE_URL=${DATABASE_URL}\\n    depends_on:\\n      db:\\n        condition: service_healthy\\n      redis:\\n        condition: service_started\\n    restart: unless-stopped\\n    networks:\\n      - app-network\\n\\n  db:\\n    image: postgres:16-alpine\\n    environment:\\n      POSTGRES_DB: ${POSTGRES_DB}\\n      POSTGRES_USER: ${POSTGRES_USER}\\n      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}\\n    volumes:\\n      - postgres_data:/var/lib/postgresql/data\\n      - ./init.sql:/docker-entrypoint-initdb.d/init.sql\\n    healthcheck:\\n      test: [\"CMD-SHELL\", \"pg_isready -U ${POSTGRES_USER}\"]\\n      interval: 10s\\n      timeout: 5s\\n      retries: 5\\n    networks:\\n      - app-network\\n\\n  redis:\\n    image: redis:7-alpine\\n    command: redis-server --requirepass ${REDIS_PASSWORD}\\n    volumes:\\n      - redis_data:/data\\n    networks:\\n      - app-network\\n\\n  nginx:\\n    image: nginx:alpine\\n    ports:\\n      - \"80:80\"\\n      - \"443:443\"\\n    volumes:\\n      - ./nginx.conf:/etc/nginx/nginx.conf:ro\\n      - ./certs:/etc/ssl/certs:ro\\n    depends_on:\\n      - app\\n    networks:\\n      - app-network\\n\\nvolumes:\\n  postgres_data:\\n  redis_data:\\n\\nnetworks:\\n  app-network:\\n    driver: bridge\\n'})}),\"\\n\",n(t.h2,{id:\"multi-stage-dockerfile\",children:n(t.a,{className:\"anchor\",href:\"#multi-stage-dockerfile\",children:\"Multi-Stage Dockerfile\"})}),\"\\n\",n(t.pre,{children:n(t.code,{className:\"language-dockerfile\",metastring:'title=\"Dockerfile\"',title:\"Dockerfile\",children:'# ---- Base ----\\nFROM node:22-alpine AS base\\nWORKDIR /app\\nCOPY package*.json ./\\n\\n# ---- Dependencies ----\\nFROM base AS deps\\nRUN npm ci --only=production\\n\\n# ---- Build ----\\nFROM base AS builder\\nRUN npm ci\\nCOPY . .\\nRUN npm run build\\n\\n# ---- Production ----\\nFROM node:22-alpine AS production\\nWORKDIR /app\\nENV NODE_ENV=production\\n\\nCOPY --from=deps /app/node_modules ./node_modules\\nCOPY --from=builder /app/dist ./dist\\nCOPY --from=builder /app/package.json .\\n\\nRUN addgroup -g 1001 nodejs && \\\\\\n    adduser -S nextjs -u 1001 && \\\\\\n    chown -R nextjs:nodejs /app\\n\\nUSER nextjs\\n\\nEXPOSE 3000\\nCMD [\"node\", \"dist/index.js\"]\\n'})}),\"\\n\",n(c,{type:\"note\",children:n(t.p,{children:\"Multi-stage builds drastically reduce image size. A typical Node.js app goes from ~1.2GB to ~150MB.\"})}),\"\\n\",n(t.h2,{id:\"environment-management\",children:n(t.a,{className:\"anchor\",href:\"#environment-management\",children:\"Environment Management\"})}),\"\\n\",r(d,{children:[n(i,{title:\"Development\",children:n(t.pre,{children:n(t.code,{className:\"language-env\",metastring:'title=\".env.dev\"',title:\".env.dev\",children:\"NODE_ENV=development\\nDATABASE_URL=postgresql://postgres:dev@localhost:5432/mydb\\nREDIS_PASSWORD=devpass\\nPOSTGRES_DB=mydb\\nPOSTGRES_USER=postgres\\nPOSTGRES_PASSWORD=dev\\n\"})})}),n(i,{title:\"Production\",children:n(t.pre,{children:n(t.code,{className:\"language-env\",metastring:'title=\".env.prod\"',title:\".env.prod\",children:\"NODE_ENV=production\\nDATABASE_URL=postgresql://prod_user:${SECRET}@db:5432/proddb\\nREDIS_PASSWORD=${REDIS_SECRET}\\nPOSTGRES_DB=proddb\\nPOSTGRES_USER=prod_user\\nPOSTGRES_PASSWORD=${DB_SECRET}\\n\"})})})]}),\"\\n\",n(t.h2,{id:\"common-commands\",children:n(t.a,{className:\"anchor\",href:\"#common-commands\",children:\"Common Commands\"})}),\"\\n\",n(t.pre,{children:n(t.code,{className:\"language-bash\",metastring:'title=\"compose-commands.sh\"',title:\"compose-commands.sh\",children:\"# Start all services in background\\ndocker compose up -d\\n\\n# Start specific service\\ndocker compose up -d app\\n\\n# View logs\\ndocker compose logs -f app\\n\\n# Scale a service\\ndocker compose up -d --scale app=3\\n\\n# Execute command in container\\ndocker compose exec app sh\\n\\n# Rebuild without cache\\ndocker compose build --no-cache\\n\\n# Stop and remove volumes\\ndocker compose down -v\\n\\n# Pull latest images\\ndocker compose pull\\n\"})}),\"\\n\",n(t.h2,{id:\"health-checks\",children:n(t.a,{className:\"anchor\",href:\"#health-checks\",children:\"Health Checks\"})}),\"\\n\",n(t.pre,{children:n(t.code,{className:\"language-yaml\",metastring:'title=\"healthcheck.yml\"',title:\"healthcheck.yml\",children:'services:\\n  app:\\n    healthcheck:\\n      test: [\"CMD\", \"wget\", \"--no-verbose\", \"--tries=1\", \"--spider\", \"http://localhost:3000/health\"]\\n      interval: 30s\\n      timeout: 10s\\n      retries: 3\\n      start_period: 40s\\n'})}),\"\\n\",n(c,{type:\"tip\",children:r(t.p,{children:[\"Always add health checks before \",n(t.code,{children:\"depends_on\"}),\". Without them, Compose only waits for the container to \",n(t.em,{children:\"start\"}),\", not for the service to be \",n(t.em,{children:\"ready\"}),\".\"]})}),\"\\n\",n(t.h2,{id:\"secrets-management\",children:n(t.a,{className:\"anchor\",href:\"#secrets-management\",children:\"Secrets Management\"})}),\"\\n\",n(t.pre,{children:n(t.code,{className:\"language-yaml\",metastring:'title=\"docker-compose.secrets.yml\"',title:\"docker-compose.secrets.yml\",children:\"services:\\n  app:\\n    secrets:\\n      - db_password\\n      - api_key\\n\\nsecrets:\\n  db_password:\\n    file: ./secrets/db_password.txt\\n  api_key:\\n    external: true  # Managed by Docker Swarm / external secret store\\n\"})}),\"\\n\",n(t.h2,{id:\"troubleshooting\",children:n(t.a,{className:\"anchor\",href:\"#troubleshooting\",children:\"Troubleshooting\"})}),\"\\n\",r(t.table,{children:[n(t.thead,{children:r(t.tr,{children:[n(t.th,{children:\"Problem\"}),n(t.th,{children:\"Command\"})]})}),r(t.tbody,{children:[r(t.tr,{children:[n(t.td,{children:\"Container keeps restarting\"}),n(t.td,{children:n(t.code,{children:\"docker compose logs <service>\"})})]}),r(t.tr,{children:[n(t.td,{children:\"Port already in use\"}),n(t.td,{children:n(t.code,{children:\"lsof -ti:3000 | xargs kill\"})})]}),r(t.tr,{children:[n(t.td,{children:\"Volume permissions\"}),n(t.td,{children:n(t.code,{children:\"docker compose exec app chown -R app:app /data\"})})]}),r(t.tr,{children:[n(t.td,{children:\"Network conflicts\"}),n(t.td,{children:n(t.code,{children:\"docker network prune\"})})]}),r(t.tr,{children:[n(t.td,{children:\"Out of disk space\"}),n(t.td,{children:n(t.code,{children:\"docker system prune -a\"})})]})]})]}),\"\\n\",n(t.h2,{id:\"references\",children:n(t.a,{className:\"anchor\",href:\"#references\",children:\"References\"})}),\"\\n\",r(t.ul,{children:[\"\\n\",n(t.li,{children:n(t.a,{href:\"https://docs.docker.com/compose/compose-file/\",children:\"Docker Compose Reference\"})}),\"\\n\",n(t.li,{children:n(t.a,{href:\"https://docs.docker.com/develop/develop-images/dockerfile_best-practices/\",children:\"Dockerfile Best Practices\"})}),\"\\n\"]})]})}return{default:function(e={}){const{wrapper:r}=e.components||{};return r?n(r,{...e,children:n(_createMdxContent,{...e})}):_createMdxContent(e)}};function _missingMdxReference(e,n){throw new Error(\"Expected \"+(n?\"component\":\"object\")+\" `\"+e+\"` to be defined: you likely forgot to import, pass, or provide it.\")}",
-    "slugAsParams": "docker/docker-compose-guide"
   },
   {
     "title": "Terraform AWS Infrastructure Modules",
