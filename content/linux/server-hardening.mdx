@@ -1,0 +1,207 @@
+---
+title: Linux Server Hardening Checklist
+description: Production-grade Linux server hardening guide — SSH, firewall, kernel parameters, audit logging, fail2ban, and automated security scanning.
+slug: docs/linux/server-hardening
+category: linux
+tags:
+  - linux
+  - security
+  - hardening
+  - ssh
+  - firewall
+  - ubuntu
+publishedAt: 2026-03-20
+updatedAt: 2026-04-28
+featured: false
+author: Satveek Gupta
+readingTime: 14
+template: true
+---
+
+## Overview
+
+This checklist covers the essential hardening steps for Ubuntu/Debian and RHEL/CentOS servers. Run through each section after initial server provisioning.
+
+<Callout type="warning">
+Test all hardening steps in a **staging environment** before applying to production. Locking yourself out of SSH has no easy fix on a remote server.
+</Callout>
+
+## 1. System Updates
+
+```bash title="01-updates.sh"
+# Ubuntu/Debian
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y unattended-upgrades
+sudo dpkg-reconfigure --priority=low unattended-upgrades
+
+# RHEL/CentOS
+sudo dnf update -y
+sudo dnf install -y dnf-automatic
+sudo systemctl enable --now dnf-automatic.timer
+```
+
+## 2. User & Access Management
+
+```bash title="02-users.sh"
+# Create a non-root admin user
+sudo useradd -m -s /bin/bash -G sudo adminuser
+sudo passwd adminuser
+
+# Copy SSH keys
+sudo mkdir -p /home/adminuser/.ssh
+sudo cp ~/.ssh/authorized_keys /home/adminuser/.ssh/
+sudo chown -R adminuser:adminuser /home/adminuser/.ssh
+sudo chmod 700 /home/adminuser/.ssh
+sudo chmod 600 /home/adminuser/.ssh/authorized_keys
+```
+
+## 3. SSH Hardening
+
+```bash title="03-sshd-config" {5,8,11,14}
+# /etc/ssh/sshd_config
+Port 2222                     # Change default port
+PermitRootLogin no            # Disable root login
+PasswordAuthentication no     # Key-only auth
+PubkeyAuthentication yes
+AuthorizedKeysFile .ssh/authorized_keys
+MaxAuthTries 3
+LoginGraceTime 30
+AllowUsers adminuser          # Whitelist users
+ClientAliveInterval 300
+ClientAliveCountMax 2
+X11Forwarding no
+AllowTcpForwarding no
+Banner /etc/ssh/banner.txt
+```
+
+```bash
+sudo systemctl restart sshd
+```
+
+## 4. Firewall Configuration
+
+<Tabs>
+  <Tab title="UFW (Ubuntu)">
+    ```bash title="ufw-setup.sh"
+    sudo ufw default deny incoming
+    sudo ufw default allow outgoing
+    sudo ufw allow 2222/tcp    # SSH on custom port
+    sudo ufw allow 80/tcp      # HTTP
+    sudo ufw allow 443/tcp     # HTTPS
+    sudo ufw enable
+    sudo ufw status verbose
+    ```
+  </Tab>
+  <Tab title="firewalld (RHEL)">
+    ```bash title="firewalld-setup.sh"
+    sudo systemctl enable --now firewalld
+    sudo firewall-cmd --permanent --remove-service=ssh
+    sudo firewall-cmd --permanent --add-port=2222/tcp
+    sudo firewall-cmd --permanent --add-service=http
+    sudo firewall-cmd --permanent --add-service=https
+    sudo firewall-cmd --reload
+    sudo firewall-cmd --list-all
+    ```
+  </Tab>
+</Tabs>
+
+## 5. Fail2Ban
+
+```bash title="fail2ban-setup.sh"
+sudo apt install -y fail2ban
+
+cat > /etc/fail2ban/jail.local << 'EOF'
+[DEFAULT]
+bantime  = 3600
+findtime = 600
+maxretry = 3
+backend  = systemd
+
+[sshd]
+enabled = true
+port    = 2222
+logpath = %(sshd_log)s
+EOF
+
+sudo systemctl enable --now fail2ban
+sudo fail2ban-client status sshd
+```
+
+## 6. Kernel Hardening
+
+```bash title="06-sysctl.sh"
+cat >> /etc/sysctl.d/99-hardening.conf << 'EOF'
+# Disable IP forwarding (unless this is a router)
+net.ipv4.ip_forward = 0
+
+# Disable ICMP redirects
+net.ipv4.conf.all.accept_redirects = 0
+net.ipv4.conf.default.accept_redirects = 0
+
+# Enable SYN flood protection
+net.ipv4.tcp_syncookies = 1
+
+# Disable source routing
+net.ipv4.conf.all.accept_source_route = 0
+
+# Log suspicious packets
+net.ipv4.conf.all.log_martians = 1
+
+# Randomize memory layout
+kernel.randomize_va_space = 2
+
+# Restrict core dumps
+fs.suid_dumpable = 0
+EOF
+
+sudo sysctl -p /etc/sysctl.d/99-hardening.conf
+```
+
+## 7. Audit Logging
+
+```bash title="07-auditd.sh"
+sudo apt install -y auditd audispd-plugins
+
+# Monitor sensitive files
+sudo auditctl -w /etc/passwd -p wa -k passwd_changes
+sudo auditctl -w /etc/sudoers -p wa -k sudoers_changes
+sudo auditctl -w /var/log/auth.log -p wa -k auth_log
+
+# Enable and start
+sudo systemctl enable --now auditd
+```
+
+## Verification Checklist
+
+```bash title="verify.sh"
+# Check SSH config
+sudo sshd -T | grep -E "permitrootlogin|passwordauth|port"
+
+# Check open ports
+sudo ss -tulpn
+
+# Check firewall status
+sudo ufw status verbose
+
+# Check fail2ban
+sudo fail2ban-client status
+
+# Check for SUID/SGID files
+find / -perm /4000 -type f 2>/dev/null
+
+# Check listening services
+sudo netstat -tulpn | grep LISTEN
+
+# Run Lynis security audit
+sudo apt install -y lynis
+sudo lynis audit system
+```
+
+## Security Score Targets
+
+| Check | Tool | Target |
+|-------|------|--------|
+| CIS Benchmark | `lynis` | > 80% |
+| Open ports | `nmap` | Minimum required |
+| Failed logins | `fail2ban` | Banning >3 retries |
+| Kernel CVEs | `apt list --upgradable` | 0 critical |

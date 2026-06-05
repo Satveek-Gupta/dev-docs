@@ -1,0 +1,249 @@
+---
+title: Docker Compose Production Guide
+description: Master Docker Compose for multi-container applications — from local dev to production-grade deployments with health checks, networking, and secrets.
+slug: docs/docker/docker-compose-guide
+category: docker
+tags:
+  - docker
+  - compose
+  - containers
+  - production
+  - networking
+publishedAt: 2026-02-01
+updatedAt: 2026-05-15
+featured: true
+author: Satveek Gupta
+readingTime: 15
+---
+
+## Overview
+
+Docker Compose transforms complex multi-container setups into a single declarative YAML file. This guide covers everything from basic local development to production-hardened deployments.
+
+## Architecture
+
+```mermaid
+graph LR
+  A[Nginx Proxy] --> B[App Container]
+  B --> C[PostgreSQL]
+  B --> D[Redis Cache]
+  B --> E[S3 / Volume]
+  F[Docker Network] -.->|bridge| A
+  F -.->|bridge| B
+  F -.->|bridge| C
+  F -.->|bridge| D
+```
+
+## Basic Compose File
+
+```yaml title="docker-compose.yml"
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/ssl/certs:ro
+    depends_on:
+      - app
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  app-network:
+    driver: bridge
+```
+
+## Multi-Stage Dockerfile
+
+```dockerfile title="Dockerfile"
+# ---- Base ----
+FROM node:22-alpine AS base
+WORKDIR /app
+COPY package*.json ./
+
+# ---- Dependencies ----
+FROM base AS deps
+RUN npm ci --only=production
+
+# ---- Build ----
+FROM base AS builder
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# ---- Production ----
+FROM node:22-alpine AS production
+WORKDIR /app
+ENV NODE_ENV=production
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package.json .
+
+RUN addgroup -g 1001 nodejs && \
+    adduser -S nextjs -u 1001 && \
+    chown -R nextjs:nodejs /app
+
+USER nextjs
+
+EXPOSE 3000
+CMD ["node", "dist/index.js"]
+```
+
+<Callout type="note">
+Multi-stage builds drastically reduce image size. A typical Node.js app goes from ~1.2GB to ~150MB.
+</Callout>
+
+## Environment Management
+
+<Tabs>
+  <Tab title="Development">
+    ```env title=".env.dev"
+    NODE_ENV=development
+    DATABASE_URL=postgresql://postgres:dev@localhost:5432/mydb
+    REDIS_PASSWORD=devpass
+    POSTGRES_DB=mydb
+    POSTGRES_USER=postgres
+    POSTGRES_PASSWORD=dev
+    ```
+  </Tab>
+  <Tab title="Production">
+    ```env title=".env.prod"
+    NODE_ENV=production
+    DATABASE_URL=postgresql://prod_user:${SECRET}@db:5432/proddb
+    REDIS_PASSWORD=${REDIS_SECRET}
+    POSTGRES_DB=proddb
+    POSTGRES_USER=prod_user
+    POSTGRES_PASSWORD=${DB_SECRET}
+    ```
+  </Tab>
+</Tabs>
+
+## Common Commands
+
+```bash title="compose-commands.sh"
+# Start all services in background
+docker compose up -d
+
+# Start specific service
+docker compose up -d app
+
+# View logs
+docker compose logs -f app
+
+# Scale a service
+docker compose up -d --scale app=3
+
+# Execute command in container
+docker compose exec app sh
+
+# Rebuild without cache
+docker compose build --no-cache
+
+# Stop and remove volumes
+docker compose down -v
+
+# Pull latest images
+docker compose pull
+```
+
+## Health Checks
+
+```yaml title="healthcheck.yml"
+services:
+  app:
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+```
+
+<Callout type="tip">
+Always add health checks before `depends_on`. Without them, Compose only waits for the container to *start*, not for the service to be *ready*.
+</Callout>
+
+## Secrets Management
+
+```yaml title="docker-compose.secrets.yml"
+services:
+  app:
+    secrets:
+      - db_password
+      - api_key
+
+secrets:
+  db_password:
+    file: ./secrets/db_password.txt
+  api_key:
+    external: true  # Managed by Docker Swarm / external secret store
+```
+
+## Troubleshooting
+
+| Problem | Command |
+|---------|---------|
+| Container keeps restarting | `docker compose logs <service>` |
+| Port already in use | `lsof -ti:3000 \| xargs kill` |
+| Volume permissions | `docker compose exec app chown -R app:app /data` |
+| Network conflicts | `docker network prune` |
+| Out of disk space | `docker system prune -a` |
+
+## References
+
+- [Docker Compose Reference](https://docs.docker.com/compose/compose-file/)
+- [Dockerfile Best Practices](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/)

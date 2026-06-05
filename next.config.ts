@@ -1,7 +1,16 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdx'],
+  // Turbopack is the default in Next.js 16 — silence the webpack warning
+  turbopack: {},
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: '**' },
+    ],
+  },
+  // transpilePackages needed for next-mdx-remote with Turbopack
+  transpilePackages: ['next-mdx-remote'],
+}
 
-export default nextConfig;
+export default nextConfig
