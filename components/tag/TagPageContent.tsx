@@ -13,7 +13,7 @@ interface TagDoc {
 
 export function TagPageContent({ tag, docs }: { tag: string; docs: TagDoc[] }) {
   return (
-    <main style={{ flex: 1, padding: '40px', minWidth: 0 }}>
+    <div style={{ width: '100%' }}>
       <div style={{ marginBottom: '28px' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 16px', borderRadius: '999px', border: '1px solid var(--accent-cyan)', background: 'var(--accent-cyan-dim)', marginBottom: '16px' }}>
           <Tag size={14} style={{ color: 'var(--accent-cyan)' }} />
@@ -30,33 +30,24 @@ export function TagPageContent({ tag, docs }: { tag: string; docs: TagDoc[] }) {
           <Link
             key={doc.slugAsParams}
             href={`/docs/${doc.slugAsParams}`}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '16px',
-              padding: '18px 24px',
-              textDecoration: 'none',
-              background: 'var(--bg-surface)',
-              borderBottom: '1px solid var(--border-subtle)',
-              transition: 'background 0.15s',
-            }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-elevated)' }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-surface)' }}
+            className="responsive-list-item"
           >
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: getCategoryColor(doc.category), flexShrink: 0 }} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', marginBottom: '4px' }}>{doc.title}</p>
-              {doc.description && <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>{doc.description}</p>}
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', flex: 1, minWidth: 0 }}>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: getCategoryColor(doc.category), flexShrink: 0, marginTop: '6px' }} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', marginBottom: '4px' }}>{doc.title}</p>
+                {doc.description && <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>{doc.description}</p>}
+              </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+            <div className="responsive-list-item-meta">
               <span style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '999px', background: `${getCategoryColor(doc.category)}18`, color: getCategoryColor(doc.category), fontFamily: 'var(--font-sans)' }}>
                 {doc.category}
               </span>
-              <ArrowRight size={14} style={{ color: 'var(--text-muted)' }} />
+              <ArrowRight size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
             </div>
           </Link>
         ))}
       </div>
-    </main>
+    </div>
   )
 }

@@ -13,16 +13,7 @@ export function PrevNext({ prev, next }: PrevNextProps) {
   if (!prev && !next) return null
 
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '16px',
-        marginTop: '48px',
-        paddingTop: '32px',
-        borderTop: '1px solid var(--border-subtle)',
-      }}
-    >
+    <div className="prev-next-container">
       {prev ? (
         <Link
           href={`/docs/${prev.slugAsParams}`}

@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getDocsByTag, getAllTags, getAllDocs } from '@/lib/content'
-import { TopNav } from '@/components/layout/TopNav'
-import { Sidebar } from '@/components/layout/Sidebar'
+import { DocsLayout } from '@/components/layout/DocsLayout'
 import { TagPageContent } from '@/components/tag/TagPageContent'
 
 interface PageProps {
@@ -34,12 +33,8 @@ export default async function TagPage({ params }: PageProps) {
   }))
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-base)' }}>
-      <TopNav />
-      <div style={{ display: 'flex', paddingTop: 'var(--nav-height)', maxWidth: '1400px', margin: '0 auto' }}>
-        <Sidebar docs={sidebarDocs} />
-        <TagPageContent tag={tag} docs={docs} />
-      </div>
-    </div>
+    <DocsLayout docs={sidebarDocs}>
+      <TagPageContent tag={tag} docs={docs} />
+    </DocsLayout>
   )
 }

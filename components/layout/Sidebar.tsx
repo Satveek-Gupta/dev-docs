@@ -43,18 +43,12 @@ export function Sidebar({ docs, open = true }: SidebarProps) {
   return (
     <aside
       style={{
-        width: 'var(--sidebar-width)',
-        flexShrink: 0,
-        height: `calc(100vh - var(--nav-height))`,
-        position: 'sticky',
-        top: 'var(--nav-height)',
+        width: '100%',
+        height: '100%',
         overflowY: 'auto',
-        borderRight: '1px solid var(--border-subtle)',
         padding: '16px 0',
-        transition: 'transform 0.25s ease',
-        transform: open ? 'translateX(0)' : 'translateX(-100%)',
       }}
-      className={`sidebar ${open ? '' : 'hidden lg:block'}`}
+      className="sidebar"
     >
       {groups.map((group) => {
         const cat = getCatMeta(group.category)

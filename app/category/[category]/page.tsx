@@ -2,8 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getDocsByCategory, getAllDocs } from '@/lib/content'
 import { CATEGORIES } from '@/types'
-import { TopNav } from '@/components/layout/TopNav'
-import { Sidebar } from '@/components/layout/Sidebar'
+import { DocsLayout } from '@/components/layout/DocsLayout'
 import { CategoryPageContent } from '@/components/category/CategoryPageContent'
 
 interface PageProps {
@@ -39,12 +38,8 @@ export default async function CategoryPage({ params }: PageProps) {
   }))
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-base)' }}>
-      <TopNav />
-      <div style={{ display: 'flex', paddingTop: 'var(--nav-height)', maxWidth: '1400px', margin: '0 auto' }}>
-        <Sidebar docs={sidebarDocs} />
-        <CategoryPageContent cat={cat} docs={docs} />
-      </div>
-    </div>
+    <DocsLayout docs={sidebarDocs}>
+      <CategoryPageContent cat={cat} docs={docs} />
+    </DocsLayout>
   )
 }

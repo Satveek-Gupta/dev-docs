@@ -67,23 +67,25 @@ export function TopNav({ onMenuToggle, menuOpen }: TopNavProps) {
         }}
       >
         {/* Mobile menu toggle */}
-        <button
-          onClick={onMenuToggle}
-          className="lg:hidden"
-          style={{
-            background: 'none',
-            border: '1px solid var(--border-default)',
-            borderRadius: 'var(--radius-sm)',
-            padding: '6px',
-            color: 'var(--text-secondary)',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-          }}
-          aria-label="Toggle menu"
-        >
-          {menuOpen ? <X size={18} /> : <Menu size={18} />}
-        </button>
+        {onMenuToggle && (
+          <button
+            onClick={onMenuToggle}
+            className="lg:hidden"
+            style={{
+              background: 'none',
+              border: '1px solid var(--border-default)',
+              borderRadius: 'var(--radius-sm)',
+              padding: '6px',
+              color: 'var(--text-secondary)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
+        )}
 
         {/* Logo */}
         <Link
@@ -123,7 +125,7 @@ export function TopNav({ onMenuToggle, menuOpen }: TopNavProps) {
         {/* Nav links — desktop */}
         <nav
           className="hidden lg:flex"
-          style={{ display: 'flex', gap: '4px', alignItems: 'center' }}
+          style={{ gap: '4px', alignItems: 'center' }}
         >
           {CATEGORIES.slice(0, 6).map((cat) => (
             <Link
@@ -166,33 +168,12 @@ export function TopNav({ onMenuToggle, menuOpen }: TopNavProps) {
         <button
           onClick={openSearch}
           id="search-trigger"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            background: 'var(--bg-elevated)',
-            border: '1px solid var(--border-default)',
-            borderRadius: 'var(--radius-md)',
-            padding: '6px 12px',
-            color: 'var(--text-muted)',
-            cursor: 'pointer',
-            fontSize: '0.8125rem',
-            fontFamily: 'var(--font-sans)',
-            transition: 'border-color 0.15s, color 0.15s',
-            minWidth: '160px',
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-strong)'
-            ;(e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-default)'
-            ;(e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'
-          }}
+          className="search-trigger"
         >
-          <Search size={14} />
-          <span>Search...</span>
+          <Search size={14} style={{ flexShrink: 0 }} />
+          <span className="hidden sm:inline">Search...</span>
           <kbd
+            className="hidden sm:inline-block"
             style={{
               marginLeft: 'auto',
               fontSize: '0.7rem',

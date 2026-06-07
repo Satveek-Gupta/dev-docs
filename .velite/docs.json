@@ -1,142 +1,5 @@
 [
   {
-    "title": "AWS EC2 Complete Setup Guide",
-    "description": "A step-by-step guide to launching, configuring, and securing an EC2 instance on AWS — from AMI selection to production hardening.",
-    "slug": "aws/ec2-setup-guide",
-    "category": "aws",
-    "tags": [
-      "ec2",
-      "aws",
-      "cloud",
-      "compute",
-      "iam"
-    ],
-    "publishedAt": "2026-01-15T00:00:00.000Z",
-    "updatedAt": "2026-05-20T00:00:00.000Z",
-    "featured": true,
-    "author": "Satveek Gupta",
-    "readingTime": 12,
-    "template": false,
-    "draft": false,
-    "toc": [
-      {
-        "title": "Overview",
-        "url": "#overview",
-        "items": []
-      },
-      {
-        "title": "Prerequisites",
-        "url": "#prerequisites",
-        "items": []
-      },
-      {
-        "title": "Architecture",
-        "url": "#architecture",
-        "items": []
-      },
-      {
-        "title": "Step 1 — Create a Key Pair",
-        "url": "#step-1--create-a-key-pair",
-        "items": []
-      },
-      {
-        "title": "Step 2 — Create a Security Group",
-        "url": "#step-2--create-a-security-group",
-        "items": []
-      },
-      {
-        "title": "Step 3 — Launch the Instance",
-        "url": "#step-3--launch-the-instance",
-        "items": []
-      },
-      {
-        "title": "Step 4 — Attach an IAM Role",
-        "url": "#step-4--attach-an-iam-role",
-        "items": []
-      },
-      {
-        "title": "Step 5 — SSH and Harden",
-        "url": "#step-5--ssh-and-harden",
-        "items": []
-      },
-      {
-        "title": "Verification",
-        "url": "#verification",
-        "items": []
-      },
-      {
-        "title": "Troubleshooting",
-        "url": "#troubleshooting",
-        "items": []
-      },
-      {
-        "title": "References",
-        "url": "#references",
-        "items": []
-      }
-    ],
-    "metadata": {
-      "readingTime": 2,
-      "wordCount": 541
-    },
-    "excerpt": "Overview\nAmazon EC2 (Elastic Compute Cloud) is the backbone of AWS compute. This guide walks through everything you need to launch a production-grade EC2 instance — from choosing the right AMI to hardening SSH and attaching IAM roles.\nPrerequisites\n\nAWS accoun",
-    "content": "const{Fragment:e,jsx:n,jsxs:r}=arguments[0];function _createMdxContent(t){const a={a:\"a\",code:\"code\",h2:\"h2\",li:\"li\",p:\"p\",pre:\"pre\",strong:\"strong\",table:\"table\",tbody:\"tbody\",td:\"td\",th:\"th\",thead:\"thead\",tr:\"tr\",ul:\"ul\",...t.components},{Callout:i,Step:c,Steps:s}=a;return i||_missingMdxReference(\"Callout\",!0),c||_missingMdxReference(\"Step\",!0),s||_missingMdxReference(\"Steps\",!0),r(e,{children:[n(a.h2,{id:\"overview\",children:n(a.a,{className:\"anchor\",href:\"#overview\",children:\"Overview\"})}),\"\\n\",n(a.p,{children:\"Amazon EC2 (Elastic Compute Cloud) is the backbone of AWS compute. This guide walks through everything you need to launch a production-grade EC2 instance — from choosing the right AMI to hardening SSH and attaching IAM roles.\"}),\"\\n\",n(a.h2,{id:\"prerequisites\",children:n(a.a,{className:\"anchor\",href:\"#prerequisites\",children:\"Prerequisites\"})}),\"\\n\",r(a.ul,{children:[\"\\n\",n(a.li,{children:\"AWS account with IAM admin access\"}),\"\\n\",r(a.li,{children:[\"AWS CLI installed and configured (\",n(a.code,{children:\"aws configure\"}),\")\"]}),\"\\n\",n(a.li,{children:\"Basic Linux knowledge\"}),\"\\n\"]}),\"\\n\",n(a.h2,{id:\"architecture\",children:n(a.a,{className:\"anchor\",href:\"#architecture\",children:\"Architecture\"})}),\"\\n\",n(a.pre,{children:n(a.code,{className:\"language-mermaid\",children:\"graph TD\\n  A[Internet] --\\x3e B[Internet Gateway]\\n  B --\\x3e C[Public Subnet]\\n  C --\\x3e D[EC2 Instance]\\n  D --\\x3e E[Private Subnet]\\n  E --\\x3e F[RDS Database]\\n  D --\\x3e G[S3 Bucket]\\n  H[IAM Role] --\\x3e D\\n\"})}),\"\\n\",n(a.h2,{id:\"step-1--create-a-key-pair\",children:n(a.a,{className:\"anchor\",href:\"#step-1--create-a-key-pair\",children:\"Step 1 — Create a Key Pair\"})}),\"\\n\",n(a.pre,{children:n(a.code,{className:\"language-bash\",metastring:'title=\"create-key.sh\"',title:\"create-key.sh\",children:\"aws ec2 create-key-pair \\\\\\n  --key-name my-key \\\\\\n  --query 'KeyMaterial' \\\\\\n  --output text > ~/.ssh/my-key.pem\\n\\nchmod 400 ~/.ssh/my-key.pem\\n\"})}),\"\\n\",n(i,{type:\"warning\",children:r(a.p,{children:[\"Never commit your \",n(a.code,{children:\".pem\"}),\" file to version control. Add it to \",n(a.code,{children:\".gitignore\"}),\" immediately.\"]})}),\"\\n\",n(a.h2,{id:\"step-2--create-a-security-group\",children:n(a.a,{className:\"anchor\",href:\"#step-2--create-a-security-group\",children:\"Step 2 — Create a Security Group\"})}),\"\\n\",n(a.pre,{children:n(a.code,{className:\"language-bash\",metastring:'title=\"create-sg.sh\"',title:\"create-sg.sh\",children:'# Create security group\\naws ec2 create-security-group \\\\\\n  --group-name web-sg \\\\\\n  --description \"Web server security group\" \\\\\\n  --vpc-id vpc-xxxxxxxx\\n\\n# Allow SSH from your IP only\\naws ec2 authorize-security-group-ingress \\\\\\n  --group-id sg-xxxxxxxx \\\\\\n  --protocol tcp \\\\\\n  --port 22 \\\\\\n  --cidr $(curl -s ifconfig.me)/32\\n\\n# Allow HTTP and HTTPS\\naws ec2 authorize-security-group-ingress \\\\\\n  --group-id sg-xxxxxxxx \\\\\\n  --protocol tcp \\\\\\n  --port 80 \\\\\\n  --cidr 0.0.0.0/0\\n\\naws ec2 authorize-security-group-ingress \\\\\\n  --group-id sg-xxxxxxxx \\\\\\n  --protocol tcp \\\\\\n  --port 443 \\\\\\n  --cidr 0.0.0.0/0\\n'})}),\"\\n\",n(a.h2,{id:\"step-3--launch-the-instance\",children:n(a.a,{className:\"anchor\",href:\"#step-3--launch-the-instance\",children:\"Step 3 — Launch the Instance\"})}),\"\\n\",n(a.pre,{children:n(a.code,{className:\"language-bash\",metastring:'title=\"launch-ec2.sh\" {5,6}',title:\"launch-ec2.sh\",children:\"aws ec2 run-instances \\\\\\n  --image-id ami-0c55b159cbfafe1f0 \\\\\\n  --count 1 \\\\\\n  --instance-type t3.micro \\\\\\n  --key-name my-key \\\\\\n  --security-group-ids sg-xxxxxxxx \\\\\\n  --subnet-id subnet-xxxxxxxx \\\\\\n  --associate-public-ip-address \\\\\\n  --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=web-server}]'\\n\"})}),\"\\n\",n(i,{type:\"tip\",children:r(a.p,{children:[\"Use \",n(a.strong,{children:\"t3.micro\"}),\" for development. For production, start with \",n(a.strong,{children:\"t3.medium\"}),\" and right-size after 2 weeks of CloudWatch data.\"]})}),\"\\n\",n(a.h2,{id:\"step-4--attach-an-iam-role\",children:n(a.a,{className:\"anchor\",href:\"#step-4--attach-an-iam-role\",children:\"Step 4 — Attach an IAM Role\"})}),\"\\n\",r(s,{children:[n(c,{title:\"Create the IAM role\",children:n(a.pre,{children:n(a.code,{className:\"language-bash\",children:\"aws iam create-role \\\\\\n  --role-name EC2-S3-ReadRole \\\\\\n  --assume-role-policy-document file://ec2-trust-policy.json\\n\"})})}),n(c,{title:\"Attach the policy\",children:n(a.pre,{children:n(a.code,{className:\"language-bash\",children:\"aws iam attach-role-policy \\\\\\n  --role-name EC2-S3-ReadRole \\\\\\n  --policy-arn arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess\\n\"})})}),n(c,{title:\"Create instance profile and attach\",children:n(a.pre,{children:n(a.code,{className:\"language-bash\",children:\"aws iam create-instance-profile --instance-profile-name EC2-S3-Profile\\naws iam add-role-to-instance-profile \\\\\\n  --instance-profile-name EC2-S3-Profile \\\\\\n  --role-name EC2-S3-ReadRole\\n\\naws ec2 associate-iam-instance-profile \\\\\\n  --instance-id i-xxxxxxxxxxxxxxxxx \\\\\\n  --iam-instance-profile Name=EC2-S3-Profile\\n\"})})})]}),\"\\n\",n(a.h2,{id:\"step-5--ssh-and-harden\",children:n(a.a,{className:\"anchor\",href:\"#step-5--ssh-and-harden\",children:\"Step 5 — SSH and Harden\"})}),\"\\n\",n(a.pre,{children:n(a.code,{className:\"language-bash\",metastring:'title=\"connect.sh\"',title:\"connect.sh\",children:\"ssh -i ~/.ssh/my-key.pem ec2-user@<PUBLIC_IP>\\n\"})}),\"\\n\",n(a.p,{children:\"Once connected, apply hardening:\"}),\"\\n\",n(a.pre,{children:n(a.code,{className:\"language-bash\",metastring:'title=\"harden.sh\"',title:\"harden.sh\",children:\"# Update packages\\nsudo dnf update -y\\n\\n# Disable root login\\nsudo sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config\\n\\n# Disable password auth (key-only)\\nsudo sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config\\n\\n# Restart SSH\\nsudo systemctl restart sshd\\n\\n# Enable firewall\\nsudo systemctl enable --now firewalld\\nsudo firewall-cmd --permanent --add-service=http\\nsudo firewall-cmd --permanent --add-service=https\\nsudo firewall-cmd --reload\\n\"})}),\"\\n\",n(a.h2,{id:\"verification\",children:n(a.a,{className:\"anchor\",href:\"#verification\",children:\"Verification\"})}),\"\\n\",n(a.pre,{children:n(a.code,{className:\"language-bash\",children:\"# Check instance status\\naws ec2 describe-instance-status --instance-ids i-xxxxxxxxxxxxxxxxx\\n\\n# Verify IAM role\\naws sts get-caller-identity\\n\\n# Test S3 access from instance\\naws s3 ls\\n\"})}),\"\\n\",n(a.h2,{id:\"troubleshooting\",children:n(a.a,{className:\"anchor\",href:\"#troubleshooting\",children:\"Troubleshooting\"})}),\"\\n\",r(a.table,{children:[n(a.thead,{children:r(a.tr,{children:[n(a.th,{children:\"Issue\"}),n(a.th,{children:\"Cause\"}),n(a.th,{children:\"Fix\"})]})}),r(a.tbody,{children:[r(a.tr,{children:[n(a.td,{children:\"SSH timeout\"}),n(a.td,{children:\"Security group missing port 22\"}),n(a.td,{children:\"Add inbound rule for TCP 22\"})]}),r(a.tr,{children:[n(a.td,{children:\"Permission denied\"}),n(a.td,{children:\"Wrong key or user\"}),r(a.td,{children:[\"Use correct \",n(a.code,{children:\".pem\"}),\" and AMI username\"]})]}),r(a.tr,{children:[n(a.td,{children:\"No public IP\"}),n(a.td,{children:\"Subnet not auto-assigning\"}),n(a.td,{children:\"Enable auto-assign or use Elastic IP\"})]}),r(a.tr,{children:[n(a.td,{children:\"IAM denied\"}),n(a.td,{children:\"Role not attached\"}),n(a.td,{children:\"Attach instance profile\"})]})]})]}),\"\\n\",n(a.h2,{id:\"references\",children:n(a.a,{className:\"anchor\",href:\"#references\",children:\"References\"})}),\"\\n\",r(a.ul,{children:[\"\\n\",n(a.li,{children:n(a.a,{href:\"https://docs.aws.amazon.com/ec2/\",children:\"AWS EC2 Documentation\"})}),\"\\n\",n(a.li,{children:n(a.a,{href:\"https://aws.amazon.com/ec2/instance-types/\",children:\"EC2 Instance Types\"})}),\"\\n\",n(a.li,{children:n(a.a,{href:\"https://docs.aws.amazon.com/vpc/latest/userguide/VPC_SecurityGroups.html\",children:\"AWS Security Groups\"})}),\"\\n\"]})]})}return{default:function(e={}){const{wrapper:r}=e.components||{};return r?n(r,{...e,children:n(_createMdxContent,{...e})}):_createMdxContent(e)}};function _missingMdxReference(e,n){throw new Error(\"Expected \"+(n?\"component\":\"object\")+\" `\"+e+\"` to be defined: you likely forgot to import, pass, or provide it.\")}",
-    "slugAsParams": "aws/ec2-setup-guide"
-  },
-  {
-    "title": "GitHub Actions Production CI/CD",
-    "description": "Production-grade CI/CD pipeline using GitHub Actions for automated linting, testing, and multi-environment deployment to AWS.",
-    "slug": "cicd/github-actions-pipeline",
-    "category": "cicd",
-    "tags": [
-      "cicd",
-      "github-actions",
-      "automation",
-      "aws"
-    ],
-    "publishedAt": "2026-04-10T00:00:00.000Z",
-    "updatedAt": "2026-05-02T00:00:00.000Z",
-    "featured": true,
-    "author": "Satveek Gupta",
-    "readingTime": 8,
-    "template": true,
-    "draft": false,
-    "toc": [
-      {
-        "title": "Overview",
-        "url": "#overview",
-        "items": []
-      },
-      {
-        "title": "Architecture",
-        "url": "#architecture",
-        "items": []
-      },
-      {
-        "title": "Workflow Configuration",
-        "url": "#workflow-configuration",
-        "items": []
-      },
-      {
-        "title": "Common Commands",
-        "url": "#common-commands",
-        "items": []
-      },
-      {
-        "title": "Best Practices",
-        "url": "#best-practices",
-        "items": []
-      }
-    ],
-    "metadata": {
-      "readingTime": 1,
-      "wordCount": 351
-    },
-    "excerpt": "Overview\nThis guide details a production-grade CI/CD workflow using GitHub Actions. It features dependency caching, parallel test execution, and secure OIDC-based deployment to AWS.\n\nUse GitHub OIDC (OpenID Connect) instead of long-lived AWS IAM User Access Ke",
-    "content": "const{Fragment:n,jsx:e,jsxs:t}=arguments[0];function _createMdxContent(i){const r={a:\"a\",code:\"code\",h2:\"h2\",li:\"li\",ol:\"ol\",p:\"p\",pre:\"pre\",strong:\"strong\",...i.components},{Callout:o}=r;return o||function(n,e){throw new Error(\"Expected \"+(e?\"component\":\"object\")+\" `\"+n+\"` to be defined: you likely forgot to import, pass, or provide it.\")}(\"Callout\",!0),t(n,{children:[e(r.h2,{id:\"overview\",children:e(r.a,{className:\"anchor\",href:\"#overview\",children:\"Overview\"})}),\"\\n\",e(r.p,{children:\"This guide details a production-grade CI/CD workflow using GitHub Actions. It features dependency caching, parallel test execution, and secure OIDC-based deployment to AWS.\"}),\"\\n\",e(o,{type:\"tip\",children:e(r.p,{children:\"Use GitHub OIDC (OpenID Connect) instead of long-lived AWS IAM User Access Keys to authenticate your workflows securely.\"})}),\"\\n\",e(r.h2,{id:\"architecture\",children:e(r.a,{className:\"anchor\",href:\"#architecture\",children:\"Architecture\"})}),\"\\n\",e(r.p,{children:\"This pipeline is divided into three main stages: Lint & Test, Build, and Deploy.\"}),\"\\n\",e(r.pre,{children:e(r.code,{className:\"language-mermaid\",children:\"graph TD\\n  A[Developer Push] --\\x3e B[Lint & Type Check]\\n  A --\\x3e C[Unit Tests]\\n  B --\\x3e D[Build Artifact]\\n  C --\\x3e D\\n  D --\\x3e E{Branch?}\\n  E -- main --\\x3e F[Deploy to Staging]\\n  E -- tag --\\x3e G[Deploy to Production]\\n\"})}),\"\\n\",e(r.h2,{id:\"workflow-configuration\",children:e(r.a,{className:\"anchor\",href:\"#workflow-configuration\",children:\"Workflow Configuration\"})}),\"\\n\",t(r.p,{children:[\"Create a file at \",e(r.code,{children:\".github/workflows/pipeline.yml\"}),\" with the following configuration.\"]}),\"\\n\",e(r.pre,{children:e(r.code,{className:\"language-yaml\",metastring:'title=\".github/workflows/pipeline.yml\"',title:\".github/workflows/pipeline.yml\",children:\"name: CI/CD Pipeline\\n\\non:\\n  push:\\n    branches: [ main ]\\n    tags: [ 'v*.*.*' ]\\n  pull_request:\\n    branches: [ main ]\\n\\npermissions:\\n  id-token: write # Required for AWS OIDC authentication\\n  contents: read\\n\\njobs:\\n  validate:\\n    name: Lint & Test\\n    runs-on: ubuntu-latest\\n    steps:\\n      - name: Checkout Code\\n        uses: actions/checkout@v4\\n\\n      - name: Setup Node.js\\n        uses: actions/setup-node@v4\\n        with:\\n          node-size: 20\\n          cache: 'npm'\\n\\n      - name: Install Dependencies\\n        run: npm ci\\n\\n      - name: Run Linter\\n        run: npm run lint\\n\\n      - name: Run Type Check\\n        run: npm run type-check\\n\\n      - name: Run Unit Tests\\n        run: npm run test -- --coverage\\n\\n  deploy-staging:\\n    name: Deploy to Staging\\n    needs: validate\\n    if: github.ref == 'refs/heads/main' && github.event_name == 'push'\\n    runs-on: ubuntu-latest\\n    steps:\\n      - name: Checkout Code\\n        uses: actions/checkout@v4\\n\\n      - name: Configure AWS Credentials\\n        uses: aws-actions/configure-aws-credentials@v4\\n        with:\\n          role-to-assume: arn:aws:iam::123456789012:role/GitHubActionsStagingRole\\n          aws-region: us-east-1\\n\\n      - name: Deploy Staging\\n        run: |\\n          echo \\\"Deploying application to Staging environment...\\\"\\n          # Insert AWS CLI or deployment scripts here\\n\"})}),\"\\n\",e(r.h2,{id:\"common-commands\",children:e(r.a,{className:\"anchor\",href:\"#common-commands\",children:\"Common Commands\"})}),\"\\n\",e(r.p,{children:\"Below are standard commands to work with GitHub Actions locally or manage runner environments.\"}),\"\\n\",e(r.pre,{children:e(r.code,{className:\"language-bash\",children:\"# Run workflows locally using act\\nact -j validate\\n\\n# Install github CLI to check workflow status\\ngh run list\\n\\n# View live logs for a running workflow\\ngh run watch\\n\"})}),\"\\n\",e(r.h2,{id:\"best-practices\",children:e(r.a,{className:\"anchor\",href:\"#best-practices\",children:\"Best Practices\"})}),\"\\n\",t(r.ol,{children:[\"\\n\",t(r.li,{children:[e(r.strong,{children:\"Avoid Hardcoded Credentials\"}),\": Always use repository secrets or secure OIDC federation.\"]}),\"\\n\",t(r.li,{children:[e(r.strong,{children:\"Cache Dependencies\"}),\": Enable package caching to reduce pipeline run time by up to 60%.\"]}),\"\\n\",t(r.li,{children:[e(r.strong,{children:\"Use Branch Protection\"}),\": Ensure all tests pass in pull requests before allowing merge to \",e(r.code,{children:\"main\"}),\".\"]}),\"\\n\"]})]})}return{default:function(n={}){const{wrapper:t}=n.components||{};return t?e(t,{...n,children:e(_createMdxContent,{...n})}):_createMdxContent(n)}};",
-    "slugAsParams": "cicd/github-actions-pipeline"
-  },
-  {
     "title": "Docker Compose Production Guide",
     "description": "Master Docker Compose for multi-container applications — from local dev to production-grade deployments with health checks, networking, and secrets.",
     "slug": "docker/docker-compose-guide",
@@ -284,6 +147,143 @@
     "excerpt": "Overview\nKubernetes provides powerful primitives for zero-downtime deployments. Understanding deployment strategies is essential for maintaining high availability in production.\nStrategy Comparison\n| Strategy | Downtime | Risk | Rollback Speed | Resource Cost ",
     "content": "const{Fragment:e,jsx:n,jsxs:t}=arguments[0];function _createMdxContent(a){const l={a:\"a\",code:\"code\",h2:\"h2\",h3:\"h3\",li:\"li\",p:\"p\",pre:\"pre\",table:\"table\",tbody:\"tbody\",td:\"td\",th:\"th\",thead:\"thead\",tr:\"tr\",ul:\"ul\",...a.components},{Callout:r,Step:i,Steps:c}=l;return r||_missingMdxReference(\"Callout\",!0),i||_missingMdxReference(\"Step\",!0),c||_missingMdxReference(\"Steps\",!0),t(e,{children:[n(l.h2,{id:\"overview\",children:n(l.a,{className:\"anchor\",href:\"#overview\",children:\"Overview\"})}),\"\\n\",n(l.p,{children:\"Kubernetes provides powerful primitives for zero-downtime deployments. Understanding deployment strategies is essential for maintaining high availability in production.\"}),\"\\n\",n(l.h2,{id:\"strategy-comparison\",children:n(l.a,{className:\"anchor\",href:\"#strategy-comparison\",children:\"Strategy Comparison\"})}),\"\\n\",t(l.table,{children:[n(l.thead,{children:t(l.tr,{children:[n(l.th,{children:\"Strategy\"}),n(l.th,{children:\"Downtime\"}),n(l.th,{children:\"Risk\"}),n(l.th,{children:\"Rollback Speed\"}),n(l.th,{children:\"Resource Cost\"})]})}),t(l.tbody,{children:[t(l.tr,{children:[n(l.td,{children:\"Recreate\"}),n(l.td,{children:\"Yes\"}),n(l.td,{children:\"High\"}),n(l.td,{children:\"Fast\"}),n(l.td,{children:\"Low\"})]}),t(l.tr,{children:[n(l.td,{children:\"Rolling Update\"}),n(l.td,{children:\"None\"}),n(l.td,{children:\"Medium\"}),n(l.td,{children:\"Medium\"}),n(l.td,{children:\"Low\"})]}),t(l.tr,{children:[n(l.td,{children:\"Blue/Green\"}),n(l.td,{children:\"None\"}),n(l.td,{children:\"Low\"}),n(l.td,{children:\"Instant\"}),n(l.td,{children:\"2x\"})]}),t(l.tr,{children:[n(l.td,{children:\"Canary\"}),n(l.td,{children:\"None\"}),n(l.td,{children:\"Very Low\"}),n(l.td,{children:\"Instant\"}),n(l.td,{children:\"Medium\"})]}),t(l.tr,{children:[n(l.td,{children:\"A/B Testing\"}),n(l.td,{children:\"None\"}),n(l.td,{children:\"Low\"}),n(l.td,{children:\"Instant\"}),n(l.td,{children:\"Medium\"})]})]})]}),\"\\n\",n(l.h2,{id:\"rolling-update-default\",children:n(l.a,{className:\"anchor\",href:\"#rolling-update-default\",children:\"Rolling Update (Default)\"})}),\"\\n\",n(l.pre,{children:n(l.code,{className:\"language-yaml\",metastring:'title=\"rolling-deployment.yaml\"',title:\"rolling-deployment.yaml\",children:'apiVersion: apps/v1\\nkind: Deployment\\nmetadata:\\n  name: web-app\\n  namespace: production\\nspec:\\n  replicas: 6\\n  strategy:\\n    type: RollingUpdate\\n    rollingUpdate:\\n      maxSurge: 2        # Allow 2 extra pods during update\\n      maxUnavailable: 1  # At most 1 pod down at a time\\n  selector:\\n    matchLabels:\\n      app: web-app\\n  template:\\n    metadata:\\n      labels:\\n        app: web-app\\n        version: v2\\n    spec:\\n      containers:\\n        - name: web-app\\n          image: myapp:v2.1.0\\n          ports:\\n            - containerPort: 8080\\n          readinessProbe:\\n            httpGet:\\n              path: /healthz\\n              port: 8080\\n            initialDelaySeconds: 10\\n            periodSeconds: 5\\n            failureThreshold: 3\\n          livenessProbe:\\n            httpGet:\\n              path: /livez\\n              port: 8080\\n            initialDelaySeconds: 30\\n            periodSeconds: 10\\n          resources:\\n            requests:\\n              memory: \"128Mi\"\\n              cpu: \"250m\"\\n            limits:\\n              memory: \"256Mi\"\\n              cpu: \"500m\"\\n'})}),\"\\n\",n(r,{type:\"warning\",children:t(l.p,{children:[\"Always define \",n(l.code,{children:\"readinessProbe\"}),\". Without it, Kubernetes sends traffic to pods that aren't ready, causing 5xx errors during rollouts.\"]})}),\"\\n\",n(l.h2,{id:\"bluegreen-deployment\",children:n(l.a,{className:\"anchor\",href:\"#bluegreen-deployment\",children:\"Blue/Green Deployment\"})}),\"\\n\",n(l.pre,{children:n(l.code,{className:\"language-mermaid\",children:\"graph TD\\n  LB[Load Balancer / Service] --\\x3e|active| GREEN[Green: v2 - Active]\\n  LB -.->|idle| BLUE[Blue: v1 - Standby]\\n  style GREEN fill:#22c55e,color:#fff\\n  style BLUE fill:#3b82f6,color:#fff\\n\"})}),\"\\n\",n(l.pre,{children:n(l.code,{className:\"language-yaml\",metastring:'title=\"blue-green.yaml\"',title:\"blue-green.yaml\",children:\"# Blue deployment (current production)\\napiVersion: apps/v1\\nkind: Deployment\\nmetadata:\\n  name: web-app-blue\\nspec:\\n  replicas: 3\\n  selector:\\n    matchLabels:\\n      app: web-app\\n      slot: blue\\n  template:\\n    metadata:\\n      labels:\\n        app: web-app\\n        slot: blue\\n        version: v1\\n    spec:\\n      containers:\\n        - name: web-app\\n          image: myapp:v1.0.0\\n\\n---\\n# Green deployment (new version)\\napiVersion: apps/v1\\nkind: Deployment\\nmetadata:\\n  name: web-app-green\\nspec:\\n  replicas: 3\\n  selector:\\n    matchLabels:\\n      app: web-app\\n      slot: green\\n  template:\\n    metadata:\\n      labels:\\n        app: web-app\\n        slot: green\\n        version: v2\\n    spec:\\n      containers:\\n        - name: web-app\\n          image: myapp:v2.0.0\\n\\n---\\n# Service — switch between blue/green by changing selector\\napiVersion: v1\\nkind: Service\\nmetadata:\\n  name: web-app-svc\\nspec:\\n  selector:\\n    app: web-app\\n    slot: green  # ← Change this to switch traffic\\n  ports:\\n    - port: 80\\n      targetPort: 8080\\n\"})}),\"\\n\",n(l.h3,{id:\"switching-traffic\",children:n(l.a,{className:\"anchor\",href:\"#switching-traffic\",children:\"Switching Traffic\"})}),\"\\n\",n(l.pre,{children:n(l.code,{className:\"language-bash\",metastring:'title=\"switch-traffic.sh\"',title:\"switch-traffic.sh\",children:'# Switch to green\\nkubectl patch service web-app-svc -p \\'{\"spec\":{\"selector\":{\"slot\":\"green\"}}}\\'\\n\\n# Verify rollout\\nkubectl get pods -l slot=green\\n\\n# If issues, instant rollback to blue\\nkubectl patch service web-app-svc -p \\'{\"spec\":{\"selector\":{\"slot\":\"blue\"}}}\\'\\n'})}),\"\\n\",n(l.h2,{id:\"canary-deployment\",children:n(l.a,{className:\"anchor\",href:\"#canary-deployment\",children:\"Canary Deployment\"})}),\"\\n\",t(c,{children:[t(i,{title:\"Deploy canary with 10% traffic\",children:[n(l.pre,{children:n(l.code,{className:\"language-bash\",children:\"# Deploy canary (1 replica = 10% if main has 9)\\nkubectl apply -f canary-deployment.yaml\\n\"})}),n(l.pre,{children:n(l.code,{className:\"language-yaml\",metastring:'title=\"canary-deployment.yaml\"',title:\"canary-deployment.yaml\",children:\"apiVersion: apps/v1\\nkind: Deployment\\nmetadata:\\n  name: web-app-canary\\nspec:\\n  replicas: 1\\n  selector:\\n    matchLabels:\\n      app: web-app\\n      track: canary\\n  template:\\n    metadata:\\n      labels:\\n        app: web-app\\n        track: canary\\n    spec:\\n      containers:\\n        - name: web-app\\n          image: myapp:v2.0.0-beta\\n\"})})]}),n(i,{title:\"Monitor metrics for 30 minutes\",children:n(l.pre,{children:n(l.code,{className:\"language-bash\",children:\"# Watch error rate\\nkubectl top pods -l app=web-app\\nkubectl logs -l track=canary --tail=100 -f\\n\"})})}),n(i,{title:\"Promote to full rollout\",children:n(l.pre,{children:n(l.code,{className:\"language-bash\",children:\"# If metrics look good, promote\\nkubectl set image deployment/web-app-main web-app=myapp:v2.0.0-beta\\nkubectl delete deployment web-app-canary\\n\"})})})]}),\"\\n\",n(l.h2,{id:\"rollback\",children:n(l.a,{className:\"anchor\",href:\"#rollback\",children:\"Rollback\"})}),\"\\n\",n(l.pre,{children:n(l.code,{className:\"language-bash\",metastring:'title=\"rollback.sh\"',title:\"rollback.sh\",children:\"# Check rollout history\\nkubectl rollout history deployment/web-app\\n\\n# Rollback to previous version\\nkubectl rollout undo deployment/web-app\\n\\n# Rollback to specific revision\\nkubectl rollout undo deployment/web-app --to-revision=3\\n\\n# Check rollout status\\nkubectl rollout status deployment/web-app\\n\"})}),\"\\n\",n(l.h2,{id:\"references\",children:n(l.a,{className:\"anchor\",href:\"#references\",children:\"References\"})}),\"\\n\",t(l.ul,{children:[\"\\n\",n(l.li,{children:n(l.a,{href:\"https://kubernetes.io/docs/concepts/workloads/controllers/deployment/\",children:\"Kubernetes Deployments\"})}),\"\\n\",n(l.li,{children:n(l.a,{href:\"https://kubernetes.io/docs/tutorials/kubernetes-basics/update/update-intro/\",children:\"Zero-Downtime Deployments\"})}),\"\\n\"]})]})}return{default:function(e={}){const{wrapper:t}=e.components||{};return t?n(t,{...e,children:n(_createMdxContent,{...e})}):_createMdxContent(e)}};function _missingMdxReference(e,n){throw new Error(\"Expected \"+(n?\"component\":\"object\")+\" `\"+e+\"` to be defined: you likely forgot to import, pass, or provide it.\")}",
     "slugAsParams": "kubernetes/deployment-strategies"
+  },
+  {
+    "title": "GitHub Actions Production CI/CD",
+    "description": "Production-grade CI/CD pipeline using GitHub Actions for automated linting, testing, and multi-environment deployment to AWS.",
+    "slug": "cicd/github-actions-pipeline",
+    "category": "cicd",
+    "tags": [
+      "cicd",
+      "github-actions",
+      "automation",
+      "aws"
+    ],
+    "publishedAt": "2026-04-10T00:00:00.000Z",
+    "updatedAt": "2026-05-02T00:00:00.000Z",
+    "featured": true,
+    "author": "Satveek Gupta",
+    "readingTime": 8,
+    "template": true,
+    "draft": false,
+    "toc": [
+      {
+        "title": "Overview",
+        "url": "#overview",
+        "items": []
+      },
+      {
+        "title": "Architecture",
+        "url": "#architecture",
+        "items": []
+      },
+      {
+        "title": "Workflow Configuration",
+        "url": "#workflow-configuration",
+        "items": []
+      },
+      {
+        "title": "Common Commands",
+        "url": "#common-commands",
+        "items": []
+      },
+      {
+        "title": "Best Practices",
+        "url": "#best-practices",
+        "items": []
+      }
+    ],
+    "metadata": {
+      "readingTime": 1,
+      "wordCount": 351
+    },
+    "excerpt": "Overview\nThis guide details a production-grade CI/CD workflow using GitHub Actions. It features dependency caching, parallel test execution, and secure OIDC-based deployment to AWS.\n\nUse GitHub OIDC (OpenID Connect) instead of long-lived AWS IAM User Access Ke",
+    "content": "const{Fragment:n,jsx:e,jsxs:t}=arguments[0];function _createMdxContent(i){const r={a:\"a\",code:\"code\",h2:\"h2\",li:\"li\",ol:\"ol\",p:\"p\",pre:\"pre\",strong:\"strong\",...i.components},{Callout:o}=r;return o||function(n,e){throw new Error(\"Expected \"+(e?\"component\":\"object\")+\" `\"+n+\"` to be defined: you likely forgot to import, pass, or provide it.\")}(\"Callout\",!0),t(n,{children:[e(r.h2,{id:\"overview\",children:e(r.a,{className:\"anchor\",href:\"#overview\",children:\"Overview\"})}),\"\\n\",e(r.p,{children:\"This guide details a production-grade CI/CD workflow using GitHub Actions. It features dependency caching, parallel test execution, and secure OIDC-based deployment to AWS.\"}),\"\\n\",e(o,{type:\"tip\",children:e(r.p,{children:\"Use GitHub OIDC (OpenID Connect) instead of long-lived AWS IAM User Access Keys to authenticate your workflows securely.\"})}),\"\\n\",e(r.h2,{id:\"architecture\",children:e(r.a,{className:\"anchor\",href:\"#architecture\",children:\"Architecture\"})}),\"\\n\",e(r.p,{children:\"This pipeline is divided into three main stages: Lint & Test, Build, and Deploy.\"}),\"\\n\",e(r.pre,{children:e(r.code,{className:\"language-mermaid\",children:\"graph TD\\n  A[Developer Push] --\\x3e B[Lint & Type Check]\\n  A --\\x3e C[Unit Tests]\\n  B --\\x3e D[Build Artifact]\\n  C --\\x3e D\\n  D --\\x3e E{Branch?}\\n  E -- main --\\x3e F[Deploy to Staging]\\n  E -- tag --\\x3e G[Deploy to Production]\\n\"})}),\"\\n\",e(r.h2,{id:\"workflow-configuration\",children:e(r.a,{className:\"anchor\",href:\"#workflow-configuration\",children:\"Workflow Configuration\"})}),\"\\n\",t(r.p,{children:[\"Create a file at \",e(r.code,{children:\".github/workflows/pipeline.yml\"}),\" with the following configuration.\"]}),\"\\n\",e(r.pre,{children:e(r.code,{className:\"language-yaml\",metastring:'title=\".github/workflows/pipeline.yml\"',title:\".github/workflows/pipeline.yml\",children:\"name: CI/CD Pipeline\\n\\non:\\n  push:\\n    branches: [ main ]\\n    tags: [ 'v*.*.*' ]\\n  pull_request:\\n    branches: [ main ]\\n\\npermissions:\\n  id-token: write # Required for AWS OIDC authentication\\n  contents: read\\n\\njobs:\\n  validate:\\n    name: Lint & Test\\n    runs-on: ubuntu-latest\\n    steps:\\n      - name: Checkout Code\\n        uses: actions/checkout@v4\\n\\n      - name: Setup Node.js\\n        uses: actions/setup-node@v4\\n        with:\\n          node-size: 20\\n          cache: 'npm'\\n\\n      - name: Install Dependencies\\n        run: npm ci\\n\\n      - name: Run Linter\\n        run: npm run lint\\n\\n      - name: Run Type Check\\n        run: npm run type-check\\n\\n      - name: Run Unit Tests\\n        run: npm run test -- --coverage\\n\\n  deploy-staging:\\n    name: Deploy to Staging\\n    needs: validate\\n    if: github.ref == 'refs/heads/main' && github.event_name == 'push'\\n    runs-on: ubuntu-latest\\n    steps:\\n      - name: Checkout Code\\n        uses: actions/checkout@v4\\n\\n      - name: Configure AWS Credentials\\n        uses: aws-actions/configure-aws-credentials@v4\\n        with:\\n          role-to-assume: arn:aws:iam::123456789012:role/GitHubActionsStagingRole\\n          aws-region: us-east-1\\n\\n      - name: Deploy Staging\\n        run: |\\n          echo \\\"Deploying application to Staging environment...\\\"\\n          # Insert AWS CLI or deployment scripts here\\n\"})}),\"\\n\",e(r.h2,{id:\"common-commands\",children:e(r.a,{className:\"anchor\",href:\"#common-commands\",children:\"Common Commands\"})}),\"\\n\",e(r.p,{children:\"Below are standard commands to work with GitHub Actions locally or manage runner environments.\"}),\"\\n\",e(r.pre,{children:e(r.code,{className:\"language-bash\",children:\"# Run workflows locally using act\\nact -j validate\\n\\n# Install github CLI to check workflow status\\ngh run list\\n\\n# View live logs for a running workflow\\ngh run watch\\n\"})}),\"\\n\",e(r.h2,{id:\"best-practices\",children:e(r.a,{className:\"anchor\",href:\"#best-practices\",children:\"Best Practices\"})}),\"\\n\",t(r.ol,{children:[\"\\n\",t(r.li,{children:[e(r.strong,{children:\"Avoid Hardcoded Credentials\"}),\": Always use repository secrets or secure OIDC federation.\"]}),\"\\n\",t(r.li,{children:[e(r.strong,{children:\"Cache Dependencies\"}),\": Enable package caching to reduce pipeline run time by up to 60%.\"]}),\"\\n\",t(r.li,{children:[e(r.strong,{children:\"Use Branch Protection\"}),\": Ensure all tests pass in pull requests before allowing merge to \",e(r.code,{children:\"main\"}),\".\"]}),\"\\n\"]})]})}return{default:function(n={}){const{wrapper:t}=n.components||{};return t?e(t,{...n,children:e(_createMdxContent,{...n})}):_createMdxContent(n)}};",
+    "slugAsParams": "cicd/github-actions-pipeline"
+  },
+  {
+    "title": "AWS EC2 Complete Setup Guide",
+    "description": "A step-by-step guide to launching, configuring, and securing an EC2 instance on AWS — from AMI selection to production hardening.",
+    "slug": "aws/ec2-setup-guide",
+    "category": "aws",
+    "tags": [
+      "ec2",
+      "aws",
+      "cloud",
+      "compute",
+      "iam"
+    ],
+    "publishedAt": "2026-01-15T00:00:00.000Z",
+    "updatedAt": "2026-05-20T00:00:00.000Z",
+    "featured": true,
+    "author": "Satveek Gupta",
+    "readingTime": 12,
+    "template": false,
+    "draft": false,
+    "toc": [
+      {
+        "title": "Overview",
+        "url": "#overview",
+        "items": []
+      },
+      {
+        "title": "Prerequisites",
+        "url": "#prerequisites",
+        "items": []
+      },
+      {
+        "title": "Architecture",
+        "url": "#architecture",
+        "items": []
+      },
+      {
+        "title": "Step 1 — Create a Key Pair",
+        "url": "#step-1--create-a-key-pair",
+        "items": []
+      },
+      {
+        "title": "Step 2 — Create a Security Group",
+        "url": "#step-2--create-a-security-group",
+        "items": []
+      },
+      {
+        "title": "Step 3 — Launch the Instance",
+        "url": "#step-3--launch-the-instance",
+        "items": []
+      },
+      {
+        "title": "Step 4 — Attach an IAM Role",
+        "url": "#step-4--attach-an-iam-role",
+        "items": []
+      },
+      {
+        "title": "Step 5 — SSH and Harden",
+        "url": "#step-5--ssh-and-harden",
+        "items": []
+      },
+      {
+        "title": "Verification",
+        "url": "#verification",
+        "items": []
+      },
+      {
+        "title": "Troubleshooting",
+        "url": "#troubleshooting",
+        "items": []
+      },
+      {
+        "title": "References",
+        "url": "#references",
+        "items": []
+      }
+    ],
+    "metadata": {
+      "readingTime": 2,
+      "wordCount": 541
+    },
+    "excerpt": "Overview\nAmazon EC2 (Elastic Compute Cloud) is the backbone of AWS compute. This guide walks through everything you need to launch a production-grade EC2 instance — from choosing the right AMI to hardening SSH and attaching IAM roles.\nPrerequisites\n\nAWS accoun",
+    "content": "const{Fragment:e,jsx:n,jsxs:r}=arguments[0];function _createMdxContent(t){const a={a:\"a\",code:\"code\",h2:\"h2\",li:\"li\",p:\"p\",pre:\"pre\",strong:\"strong\",table:\"table\",tbody:\"tbody\",td:\"td\",th:\"th\",thead:\"thead\",tr:\"tr\",ul:\"ul\",...t.components},{Callout:i,Step:c,Steps:s}=a;return i||_missingMdxReference(\"Callout\",!0),c||_missingMdxReference(\"Step\",!0),s||_missingMdxReference(\"Steps\",!0),r(e,{children:[n(a.h2,{id:\"overview\",children:n(a.a,{className:\"anchor\",href:\"#overview\",children:\"Overview\"})}),\"\\n\",n(a.p,{children:\"Amazon EC2 (Elastic Compute Cloud) is the backbone of AWS compute. This guide walks through everything you need to launch a production-grade EC2 instance — from choosing the right AMI to hardening SSH and attaching IAM roles.\"}),\"\\n\",n(a.h2,{id:\"prerequisites\",children:n(a.a,{className:\"anchor\",href:\"#prerequisites\",children:\"Prerequisites\"})}),\"\\n\",r(a.ul,{children:[\"\\n\",n(a.li,{children:\"AWS account with IAM admin access\"}),\"\\n\",r(a.li,{children:[\"AWS CLI installed and configured (\",n(a.code,{children:\"aws configure\"}),\")\"]}),\"\\n\",n(a.li,{children:\"Basic Linux knowledge\"}),\"\\n\"]}),\"\\n\",n(a.h2,{id:\"architecture\",children:n(a.a,{className:\"anchor\",href:\"#architecture\",children:\"Architecture\"})}),\"\\n\",n(a.pre,{children:n(a.code,{className:\"language-mermaid\",children:\"graph TD\\n  A[Internet] --\\x3e B[Internet Gateway]\\n  B --\\x3e C[Public Subnet]\\n  C --\\x3e D[EC2 Instance]\\n  D --\\x3e E[Private Subnet]\\n  E --\\x3e F[RDS Database]\\n  D --\\x3e G[S3 Bucket]\\n  H[IAM Role] --\\x3e D\\n\"})}),\"\\n\",n(a.h2,{id:\"step-1--create-a-key-pair\",children:n(a.a,{className:\"anchor\",href:\"#step-1--create-a-key-pair\",children:\"Step 1 — Create a Key Pair\"})}),\"\\n\",n(a.pre,{children:n(a.code,{className:\"language-bash\",metastring:'title=\"create-key.sh\"',title:\"create-key.sh\",children:\"aws ec2 create-key-pair \\\\\\n  --key-name my-key \\\\\\n  --query 'KeyMaterial' \\\\\\n  --output text > ~/.ssh/my-key.pem\\n\\nchmod 400 ~/.ssh/my-key.pem\\n\"})}),\"\\n\",n(i,{type:\"warning\",children:r(a.p,{children:[\"Never commit your \",n(a.code,{children:\".pem\"}),\" file to version control. Add it to \",n(a.code,{children:\".gitignore\"}),\" immediately.\"]})}),\"\\n\",n(a.h2,{id:\"step-2--create-a-security-group\",children:n(a.a,{className:\"anchor\",href:\"#step-2--create-a-security-group\",children:\"Step 2 — Create a Security Group\"})}),\"\\n\",n(a.pre,{children:n(a.code,{className:\"language-bash\",metastring:'title=\"create-sg.sh\"',title:\"create-sg.sh\",children:'# Create security group\\naws ec2 create-security-group \\\\\\n  --group-name web-sg \\\\\\n  --description \"Web server security group\" \\\\\\n  --vpc-id vpc-xxxxxxxx\\n\\n# Allow SSH from your IP only\\naws ec2 authorize-security-group-ingress \\\\\\n  --group-id sg-xxxxxxxx \\\\\\n  --protocol tcp \\\\\\n  --port 22 \\\\\\n  --cidr $(curl -s ifconfig.me)/32\\n\\n# Allow HTTP and HTTPS\\naws ec2 authorize-security-group-ingress \\\\\\n  --group-id sg-xxxxxxxx \\\\\\n  --protocol tcp \\\\\\n  --port 80 \\\\\\n  --cidr 0.0.0.0/0\\n\\naws ec2 authorize-security-group-ingress \\\\\\n  --group-id sg-xxxxxxxx \\\\\\n  --protocol tcp \\\\\\n  --port 443 \\\\\\n  --cidr 0.0.0.0/0\\n'})}),\"\\n\",n(a.h2,{id:\"step-3--launch-the-instance\",children:n(a.a,{className:\"anchor\",href:\"#step-3--launch-the-instance\",children:\"Step 3 — Launch the Instance\"})}),\"\\n\",n(a.pre,{children:n(a.code,{className:\"language-bash\",metastring:'title=\"launch-ec2.sh\" {5,6}',title:\"launch-ec2.sh\",children:\"aws ec2 run-instances \\\\\\n  --image-id ami-0c55b159cbfafe1f0 \\\\\\n  --count 1 \\\\\\n  --instance-type t3.micro \\\\\\n  --key-name my-key \\\\\\n  --security-group-ids sg-xxxxxxxx \\\\\\n  --subnet-id subnet-xxxxxxxx \\\\\\n  --associate-public-ip-address \\\\\\n  --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=web-server}]'\\n\"})}),\"\\n\",n(i,{type:\"tip\",children:r(a.p,{children:[\"Use \",n(a.strong,{children:\"t3.micro\"}),\" for development. For production, start with \",n(a.strong,{children:\"t3.medium\"}),\" and right-size after 2 weeks of CloudWatch data.\"]})}),\"\\n\",n(a.h2,{id:\"step-4--attach-an-iam-role\",children:n(a.a,{className:\"anchor\",href:\"#step-4--attach-an-iam-role\",children:\"Step 4 — Attach an IAM Role\"})}),\"\\n\",r(s,{children:[n(c,{title:\"Create the IAM role\",children:n(a.pre,{children:n(a.code,{className:\"language-bash\",children:\"aws iam create-role \\\\\\n  --role-name EC2-S3-ReadRole \\\\\\n  --assume-role-policy-document file://ec2-trust-policy.json\\n\"})})}),n(c,{title:\"Attach the policy\",children:n(a.pre,{children:n(a.code,{className:\"language-bash\",children:\"aws iam attach-role-policy \\\\\\n  --role-name EC2-S3-ReadRole \\\\\\n  --policy-arn arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess\\n\"})})}),n(c,{title:\"Create instance profile and attach\",children:n(a.pre,{children:n(a.code,{className:\"language-bash\",children:\"aws iam create-instance-profile --instance-profile-name EC2-S3-Profile\\naws iam add-role-to-instance-profile \\\\\\n  --instance-profile-name EC2-S3-Profile \\\\\\n  --role-name EC2-S3-ReadRole\\n\\naws ec2 associate-iam-instance-profile \\\\\\n  --instance-id i-xxxxxxxxxxxxxxxxx \\\\\\n  --iam-instance-profile Name=EC2-S3-Profile\\n\"})})})]}),\"\\n\",n(a.h2,{id:\"step-5--ssh-and-harden\",children:n(a.a,{className:\"anchor\",href:\"#step-5--ssh-and-harden\",children:\"Step 5 — SSH and Harden\"})}),\"\\n\",n(a.pre,{children:n(a.code,{className:\"language-bash\",metastring:'title=\"connect.sh\"',title:\"connect.sh\",children:\"ssh -i ~/.ssh/my-key.pem ec2-user@<PUBLIC_IP>\\n\"})}),\"\\n\",n(a.p,{children:\"Once connected, apply hardening:\"}),\"\\n\",n(a.pre,{children:n(a.code,{className:\"language-bash\",metastring:'title=\"harden.sh\"',title:\"harden.sh\",children:\"# Update packages\\nsudo dnf update -y\\n\\n# Disable root login\\nsudo sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config\\n\\n# Disable password auth (key-only)\\nsudo sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config\\n\\n# Restart SSH\\nsudo systemctl restart sshd\\n\\n# Enable firewall\\nsudo systemctl enable --now firewalld\\nsudo firewall-cmd --permanent --add-service=http\\nsudo firewall-cmd --permanent --add-service=https\\nsudo firewall-cmd --reload\\n\"})}),\"\\n\",n(a.h2,{id:\"verification\",children:n(a.a,{className:\"anchor\",href:\"#verification\",children:\"Verification\"})}),\"\\n\",n(a.pre,{children:n(a.code,{className:\"language-bash\",children:\"# Check instance status\\naws ec2 describe-instance-status --instance-ids i-xxxxxxxxxxxxxxxxx\\n\\n# Verify IAM role\\naws sts get-caller-identity\\n\\n# Test S3 access from instance\\naws s3 ls\\n\"})}),\"\\n\",n(a.h2,{id:\"troubleshooting\",children:n(a.a,{className:\"anchor\",href:\"#troubleshooting\",children:\"Troubleshooting\"})}),\"\\n\",r(a.table,{children:[n(a.thead,{children:r(a.tr,{children:[n(a.th,{children:\"Issue\"}),n(a.th,{children:\"Cause\"}),n(a.th,{children:\"Fix\"})]})}),r(a.tbody,{children:[r(a.tr,{children:[n(a.td,{children:\"SSH timeout\"}),n(a.td,{children:\"Security group missing port 22\"}),n(a.td,{children:\"Add inbound rule for TCP 22\"})]}),r(a.tr,{children:[n(a.td,{children:\"Permission denied\"}),n(a.td,{children:\"Wrong key or user\"}),r(a.td,{children:[\"Use correct \",n(a.code,{children:\".pem\"}),\" and AMI username\"]})]}),r(a.tr,{children:[n(a.td,{children:\"No public IP\"}),n(a.td,{children:\"Subnet not auto-assigning\"}),n(a.td,{children:\"Enable auto-assign or use Elastic IP\"})]}),r(a.tr,{children:[n(a.td,{children:\"IAM denied\"}),n(a.td,{children:\"Role not attached\"}),n(a.td,{children:\"Attach instance profile\"})]})]})]}),\"\\n\",n(a.h2,{id:\"references\",children:n(a.a,{className:\"anchor\",href:\"#references\",children:\"References\"})}),\"\\n\",r(a.ul,{children:[\"\\n\",n(a.li,{children:n(a.a,{href:\"https://docs.aws.amazon.com/ec2/\",children:\"AWS EC2 Documentation\"})}),\"\\n\",n(a.li,{children:n(a.a,{href:\"https://aws.amazon.com/ec2/instance-types/\",children:\"EC2 Instance Types\"})}),\"\\n\",n(a.li,{children:n(a.a,{href:\"https://docs.aws.amazon.com/vpc/latest/userguide/VPC_SecurityGroups.html\",children:\"AWS Security Groups\"})}),\"\\n\"]})]})}return{default:function(e={}){const{wrapper:r}=e.components||{};return r?n(r,{...e,children:n(_createMdxContent,{...e})}):_createMdxContent(e)}};function _missingMdxReference(e,n){throw new Error(\"Expected \"+(n?\"component\":\"object\")+\" `\"+e+\"` to be defined: you likely forgot to import, pass, or provide it.\")}",
+    "slugAsParams": "aws/ec2-setup-guide"
   },
   {
     "title": "Linux Server Hardening Checklist",

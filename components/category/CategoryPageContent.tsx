@@ -29,11 +29,11 @@ export function CategoryPageContent({ cat, docs }: CategoryPageContentProps) {
   const color = cat.color
 
   return (
-    <main style={{ flex: 1, padding: '40px', minWidth: 0 }}>
+    <div style={{ width: '100%' }}>
       {/* Category header */}
       <div
         style={{
-          padding: '32px',
+          padding: '24px',
           border: '1px solid var(--border-subtle)',
           borderRadius: '16px',
           background: 'var(--bg-surface)',
@@ -62,31 +62,22 @@ export function CategoryPageContent({ cat, docs }: CategoryPageContentProps) {
             <Link
               key={doc.slugAsParams}
               href={`/docs/${doc.slugAsParams}`}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '16px',
-                padding: '18px 24px',
-                textDecoration: 'none',
-                background: 'var(--bg-surface)',
-                borderBottom: '1px solid var(--border-subtle)',
-                transition: 'background 0.15s',
-              }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-elevated)' }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-surface)' }}
+              className="responsive-list-item"
             >
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: color, flexShrink: 0 }} />
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {doc.title}
-                </p>
-                {doc.description && (
-                  <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {doc.description}
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', flex: 1, minWidth: 0 }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: color, flexShrink: 0, marginTop: '6px' }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {doc.title}
                   </p>
-                )}
+                  {doc.description && (
+                    <p style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {doc.description}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+              <div className="responsive-list-item-meta">
                 {doc.readingTime && (
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <Clock size={11} /> {doc.readingTime} min
@@ -95,7 +86,7 @@ export function CategoryPageContent({ cat, docs }: CategoryPageContentProps) {
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)' }}>
                   {formatDate(doc.publishedAt)}
                 </span>
-                <ArrowRight size={14} style={{ color: 'var(--text-muted)' }} />
+                <ArrowRight size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
               </div>
             </Link>
           ))}
@@ -105,6 +96,6 @@ export function CategoryPageContent({ cat, docs }: CategoryPageContentProps) {
           No articles in this category yet.
         </div>
       )}
-    </main>
+    </div>
   )
 }

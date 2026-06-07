@@ -104,32 +104,23 @@ export function HomepageContent({
               <Link
                 key={doc.slug}
                 href={`/docs/${doc.slugAsParams}`}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '16px',
-                  padding: '16px 20px',
-                  textDecoration: 'none',
-                  background: 'var(--bg-surface)',
-                  borderBottom: '1px solid var(--border-subtle)',
-                  transition: 'background 0.15s',
-                }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-elevated)' }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-surface)' }}
+                className="responsive-list-item"
               >
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: getCategoryColor(doc.category), flexShrink: 0 }} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '3px' }}>{doc.title}</p>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.description ?? doc.excerpt}</p>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', flex: 1, minWidth: 0 }}>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: getCategoryColor(doc.category), flexShrink: 0, marginTop: '6px' }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-sans)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '3px' }}>{doc.title}</p>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.description ?? doc.excerpt}</p>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+                <div className="responsive-list-item-meta">
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-sans)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <Clock size={11} /> {doc.readingTime ?? 5} min
                   </span>
                   <span style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '999px', background: `${getCategoryColor(doc.category)}18`, color: getCategoryColor(doc.category), fontFamily: 'var(--font-sans)' }}>
                     {doc.category}
                   </span>
-                  <ArrowRight size={14} style={{ color: 'var(--text-muted)' }} />
+                  <ArrowRight size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
                 </div>
               </Link>
             ))}

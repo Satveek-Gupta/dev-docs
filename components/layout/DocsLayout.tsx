@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { TopNav } from './TopNav'
 import { Sidebar } from './Sidebar'
+import { cn } from '@/lib/utils'
 
 interface SidebarDoc {
   title: string
@@ -51,27 +52,12 @@ export function DocsLayout({ docs, children, toc }: DocsLayoutProps) {
         )}
 
         {/* Sidebar */}
-        <div
-          style={{
-            position: menuOpen ? 'fixed' : 'relative',
-            top: menuOpen ? 'var(--nav-height)' : 'auto',
-            left: menuOpen ? 0 : 'auto',
-            zIndex: menuOpen ? 40 : 'auto',
-            backgroundColor: menuOpen ? 'var(--bg-base)' : 'transparent',
-            height: menuOpen ? `calc(100vh - var(--nav-height))` : 'auto',
-          }}
-        >
-          <Sidebar docs={docs} open={menuOpen || true} />
+        <div className={cn("sidebar-wrapper", menuOpen && "open")}>
+          <Sidebar docs={docs} />
         </div>
 
         {/* Main content */}
-        <main
-          style={{
-            flex: 1,
-            minWidth: 0,
-            padding: '40px 40px',
-          }}
-        >
+        <main className="main-content">
           {children}
         </main>
 
