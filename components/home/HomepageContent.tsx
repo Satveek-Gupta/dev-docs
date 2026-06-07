@@ -254,11 +254,11 @@ export function HeroSection({ docCount, categoryCount }: { docCount: number; cat
           <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent-cyan)', display: 'inline-block', boxShadow: '0 0 8px var(--accent-cyan)' }} />
           {docCount} articles across {categoryCount} categories
         </div>
-        <h1 className="animate-fade-up gradient-text" style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(2.5rem, 6vw, 4rem)', fontWeight: 400, lineHeight: '1.1', marginBottom: '24px', animationDelay: '80ms' }}>
-          Cloud & DevOps<br />Knowledge Base
+        <h1 className="animate-fade-up gradient-text" style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(3rem, 7vw, 4.5rem)', fontWeight: 400, lineHeight: '1.1', marginBottom: '24px', animationDelay: '80ms' }}>
+          OpsForge
         </h1>
-        <p className="animate-fade-up" style={{ fontSize: 'clamp(1rem, 2vw, 1.2rem)', color: 'var(--text-muted)', lineHeight: '1.7', marginBottom: '40px', maxWidth: '580px', margin: '0 auto 40px', fontFamily: 'var(--font-sans)', animationDelay: '160ms' }}>
-          Production-ready guides, templates, and infrastructure documentation for AWS, Docker, Kubernetes, Terraform, and beyond.
+        <p className="animate-fade-up" style={{ fontSize: 'clamp(1rem, 2vw, 1.2rem)', color: 'var(--text-muted)', lineHeight: '1.7', marginBottom: '40px', maxWidth: '640px', margin: '0 auto 40px', fontFamily: 'var(--font-sans)', animationDelay: '160ms' }}>
+          Production-ready Cloud & DevOps Knowledge Base — guides, templates, and infrastructure documentation for AWS, Docker, Kubernetes, Terraform, and beyond.
         </p>
         <div className="animate-fade-up stagger" style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', animationDelay: '240ms' }}>
           <Link
@@ -275,7 +275,7 @@ export function HeroSection({ docCount, categoryCount }: { docCount: number; cat
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-strong)'; (e.currentTarget as HTMLElement).style.background = 'var(--bg-elevated)' }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-default)'; (e.currentTarget as HTMLElement).style.background = 'transparent' }}
           >
-            Search Knowledge Base
+            Search OpsForge
             <kbd style={{ fontSize: '0.65rem', padding: '1px 5px', border: '1px solid var(--border-default)', borderRadius: '3px', fontFamily: 'var(--font-mono)', opacity: 0.7 }}>⌘K</kbd>
           </button>
         </div>

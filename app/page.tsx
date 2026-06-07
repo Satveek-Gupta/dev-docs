@@ -5,7 +5,7 @@ import { HeroSection, HomepageContent } from '@/components/home/HomepageContent'
 import { TopNav } from '@/components/layout/TopNav'
 
 export const metadata: Metadata = {
-  title: 'Cloud & DevOps Knowledge Base',
+  title: 'OpsForge — Cloud & DevOps Knowledge Base',
   description: 'Production-ready guides, templates, and infrastructure documentation for cloud engineering.',
 }
 

@@ -54,39 +54,6 @@
   --nav-height: 56px;
 }
 
-.light {
-  /* Colors */
-  --bg-base: #f8fafc;
-  --bg-surface: #ffffff;
-  --bg-elevated: #f1f5f9;
-  --bg-overlay: #e2e8f0;
-
-  --border-subtle: rgba(0,0,0,0.05);
-  --border-default: rgba(0,0,0,0.08);
-  --border-strong: rgba(0,0,0,0.15);
-
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --text-muted: #64748b;
-  --text-disabled: #94a3b8;
-
-  --accent-cyan: #0891b2;
-  --accent-cyan-dim: rgba(8, 145, 178, 0.08);
-  --accent-cyan-glow: rgba(8, 145, 178, 0.15);
-  --accent-amber: #d97706;
-  --accent-amber-dim: rgba(217, 119, 6, 0.08);
-  --accent-green: #16a34a;
-  --accent-green-dim: rgba(22, 163, 74, 0.08);
-  --accent-red: #dc2626;
-  --accent-red-dim: rgba(220, 38, 38, 0.08);
-  --accent-purple: #7c3aed;
-  --accent-purple-dim: rgba(124, 58, 237, 0.08);
-
-  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
-  --shadow-lg: 0 8px 32px rgba(0,0,0,0.08);
-  --shadow-glow-cyan: 0 0 20px rgba(8,145,178,0.1), 0 0 40px rgba(8,145,178,0.05);
-}
 
 /* ============================================================
    BASE STYLES
@@ -146,10 +113,6 @@ body {
   background-size: 24px 24px;
 }
 
-.light .dot-grid {
-  background-image:
-    radial-gradient(circle, rgba(0,0,0,0.06) 1px, transparent 1px);
-}
 
 .dot-grid-fade {
   background-image:
@@ -158,10 +121,6 @@ body {
   mask-image: radial-gradient(ellipse 80% 70% at 50% 0%, black 40%, transparent 100%);
 }
 
-.light .dot-grid-fade {
-  background-image:
-    radial-gradient(circle, rgba(0,0,0,0.05) 1px, transparent 1px);
-}
 
 /* ============================================================
    GLASSMORPHISM
@@ -173,9 +132,6 @@ body {
   border: 1px solid var(--border-subtle);
 }
 
-.light .glass {
-  background: rgba(255,255,255,0.7);
-}
 
 .glass-strong {
   background: rgba(255,255,255,0.05);
@@ -184,9 +140,6 @@ body {
   border: 1px solid var(--border-default);
 }
 
-.light .glass-strong {
-  background: rgba(255,255,255,0.85);
-}
 
 /* ============================================================
    GRADIENT BORDERS

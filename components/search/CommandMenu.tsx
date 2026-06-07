@@ -19,7 +19,7 @@ interface CommandMenuProps {
   items: SearchItem[]
 }
 
-const RECENT_KEY = 'devdocs-recent-searches'
+const RECENT_KEY = 'opsforge-recent-searches'
 const MAX_RECENT = 5
 
 export function CommandMenu({ items }: CommandMenuProps) {

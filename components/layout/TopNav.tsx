@@ -4,9 +4,8 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  Search, Sun, Moon, Monitor, Github, Menu, X, BookOpen
+  Search, Github, Menu, X
 } from 'lucide-react'
-import { useTheme } from 'next-themes'
 import { cn } from '@/lib/utils'
 import { CATEGORIES } from '@/types'
 
@@ -17,7 +16,6 @@ interface TopNavProps {
 
 export function TopNav({ onMenuToggle, menuOpen }: TopNavProps) {
   const pathname = usePathname()
-  const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
 
@@ -40,13 +38,7 @@ export function TopNav({ onMenuToggle, menuOpen }: TopNavProps) {
     return () => document.removeEventListener('keydown', down)
   }, [openSearch])
 
-  const cycleTheme = () => {
-    if (theme === 'dark') setTheme('light')
-    else if (theme === 'light') setTheme('system')
-    else setTheme('dark')
-  }
 
-  const ThemeIcon = !mounted ? Monitor : theme === 'dark' ? Moon : theme === 'light' ? Sun : Monitor
 
   return (
     <header
@@ -104,20 +96,17 @@ export function TopNav({ onMenuToggle, menuOpen }: TopNavProps) {
             flexShrink: 0,
           }}
         >
-          <div
+          <img
+            src="/LOGO_OpsForge2.png"
+            alt="OpsForge Logo"
             style={{
               width: '28px',
               height: '28px',
               borderRadius: '6px',
-              background: 'linear-gradient(135deg, var(--accent-cyan), #0066cc)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
               boxShadow: '0 0 12px var(--accent-cyan-glow)',
+              objectFit: 'cover',
             }}
-          >
-            <BookOpen size={14} color="#fff" />
-          </div>
+          />
           <span
             style={{
               fontFamily: 'var(--font-display)',
@@ -127,7 +116,7 @@ export function TopNav({ onMenuToggle, menuOpen }: TopNavProps) {
               letterSpacing: '-0.02em',
             }}
           >
-            DevDocs
+            OpsForge
           </span>
         </Link>
 
@@ -218,32 +207,7 @@ export function TopNav({ onMenuToggle, menuOpen }: TopNavProps) {
           </kbd>
         </button>
 
-        {/* Theme toggle */}
-        <button
-          onClick={cycleTheme}
-          style={{
-            background: 'none',
-            border: '1px solid var(--border-default)',
-            borderRadius: 'var(--radius-sm)',
-            padding: '6px',
-            color: 'var(--text-muted)',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            transition: 'color 0.15s, border-color 0.15s',
-          }}
-          aria-label="Toggle theme"
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'
-            ;(e.currentTarget as HTMLElement).style.borderColor = 'var(--border-strong)'
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.color = 'var(--text-muted)'
-            ;(e.currentTarget as HTMLElement).style.borderColor = 'var(--border-default)'
-          }}
-        >
-          <ThemeIcon size={15} />
-        </button>
+
 
         {/* GitHub */}
         <a

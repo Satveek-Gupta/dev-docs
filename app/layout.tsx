@@ -7,8 +7,8 @@ import '../styles/globals.css'
 
 export const metadata: Metadata = {
   title: {
-    default: process.env.NEXT_PUBLIC_SITE_NAME ?? 'Cloud & DevOps Knowledge Base',
-    template: `%s | DevDocs`,
+    default: process.env.NEXT_PUBLIC_SITE_NAME ?? 'OpsForge',
+    template: `%s | OpsForge`,
   },
   description: process.env.NEXT_PUBLIC_SITE_DESCRIPTION ?? 'Production-ready guides, templates, and infrastructure documentation.',
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
@@ -67,7 +67,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
-          enableSystem
+          forcedTheme="dark"
           disableTransitionOnChange
         >
           <CommandMenu items={searchItems} />

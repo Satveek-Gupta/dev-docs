@@ -16,7 +16,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { tag } = await params
   return {
-    title: `#${tag} — DevDocs`,
+    title: `#${tag} — OpsForge`,
     description: `All articles tagged with #${tag}`,
   }
 }
