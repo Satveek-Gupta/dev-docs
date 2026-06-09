@@ -105,3 +105,4 @@ We welcome contributions from the community to improve the guides, add new docum
 * **Code Blocks**: Always specify the language on code blocks (e.g. ` ```bash ` or ` ```yaml `). If the block represents a script or config file, add a filename using `title="name.ext"`.
 * **Mermaid Diagrams**: Use standard ` ```mermaid ` fences for diagrams.
 * **Theme Support**: Avoid hardcoding colors. Use theme variables defined in `globals.css` (e.g., `var(--text-secondary)`, `var(--bg-surface)`) to preserve the premium dark theme.
+
